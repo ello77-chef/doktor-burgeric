@@ -27,7 +27,39 @@
       font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
       line-height: 1.6;
       overflow-x: hidden;
+      cursor: none;
     }
+
+    /* ── CUSTOM CURSOR ── */
+    #cursor-dot {
+      position: fixed; top: 0; left: 0; z-index: 9999;
+      width: 12px; height: 12px;
+      background: var(--orange);
+      border-radius: 50%;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      transition: width .2s ease, height .2s ease, opacity .2s ease, background .2s ease;
+      will-change: transform;
+    }
+    #cursor-ring {
+      position: fixed; top: 0; left: 0; z-index: 9998;
+      width: 12px; height: 12px;
+      border: 2px solid var(--orange);
+      border-radius: 50%;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      transition: width .35s ease, height .35s ease, opacity .35s ease, border-color .2s ease;
+      opacity: 0.5;
+      will-change: transform;
+    }
+    body.cursor-hover #cursor-dot {
+      width: 8px; height: 8px; opacity: 0.9;
+    }
+    body.cursor-hover #cursor-ring {
+      width: 48px; height: 48px; opacity: 0.25;
+    }
+    /* restore pointer on links/buttons for accessibility — keep cursor: none on body */
+    a, button, [onclick] { cursor: none; }
 
     /* ── NAV ── */
     nav {
@@ -356,6 +388,10 @@
   </style>
 </head>
 <body>
+
+<!-- CUSTOM CURSOR -->
+<div id="cursor-dot"></div>
+<div id="cursor-ring"></div>
 
 <!-- NAV -->
 <nav id="navbar">
@@ -784,6 +820,84 @@
     nav.style.background = window.scrollY > 50
       ? 'rgba(10,10,10,0.98)'
       : 'rgba(10,10,10,0.92)';
+  });
+
+  // ── CUSTOM CURSOR ──
+  const dot  = document.getElementById('cursor-dot');
+  const ring = document.getElementById('cursor-ring');
+
+  // Raw mouse position
+  let mx = -200, my = -200;
+  // Lerped ring position
+  let rx = -200, ry = -200;
+
+  document.addEventListener('mousemove', e => {
+    mx = e.clientX;
+    my = e.clientY;
+  });
+
+  // Magnetic targets
+  const MAGNETIC_SELECTOR = 'a, button, .menu-card, .pillar, .tab-btn';
+  const MAX_OFFSET = 8;
+
+  let activeTarget = null;
+
+  document.addEventListener('mouseover', e => {
+    const el = e.target.closest(MAGNETIC_SELECTOR);
+    if (el) {
+      activeTarget = el;
+      document.body.classList.add('cursor-hover');
+    }
+  });
+  document.addEventListener('mouseout', e => {
+    const el = e.target.closest(MAGNETIC_SELECTOR);
+    if (el && el === activeTarget) {
+      // Reset magnetic offset
+      el.style.transform = '';
+      activeTarget = null;
+      document.body.classList.remove('cursor-hover');
+    }
+  });
+
+  function lerp(a, b, t) { return a + (b - a) * t; }
+
+  function tick() {
+    // Dot follows cursor instantly
+    dot.style.transform  = `translate(calc(${mx}px - 50%), calc(${my}px - 50%))`;
+
+    // Ring lerps behind
+    rx = lerp(rx, mx, 0.12);
+    ry = lerp(ry, my, 0.12);
+    ring.style.transform = `translate(calc(${rx}px - 50%), calc(${ry}px - 50%))`;
+
+    // Magnetic pull on active element
+    if (activeTarget) {
+      const rect = activeTarget.getBoundingClientRect();
+      const cx = rect.left + rect.width  / 2;
+      const cy = rect.top  + rect.height / 2;
+      const dx = mx - cx;
+      const dy = my - cy;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      const maxDist = Math.max(rect.width, rect.height);
+      const strength = Math.max(0, 1 - dist / maxDist);
+      const ox = dx * strength * MAX_OFFSET / (maxDist / 2 || 1);
+      const oy = dy * strength * MAX_OFFSET / (maxDist / 2 || 1);
+      activeTarget.style.transform = `translate(${ox.toFixed(2)}px, ${oy.toFixed(2)}px)`;
+      activeTarget.style.transition = 'transform 0.12s ease';
+    }
+
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+
+  // Hide cursor when leaving window
+  document.addEventListener('mouseleave', () => {
+    dot.style.opacity  = '0';
+    ring.style.opacity = '0';
+  });
+  document.addEventListener('mouseenter', () => {
+    dot.style.opacity  = '';
+    ring.style.opacity = '';
   });
 </script>
 </body>
