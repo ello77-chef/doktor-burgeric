@@ -17,6 +17,7 @@
       --white: #ffffff;
       --gray: #888888;
       --light-gray: #cccccc;
+      --ease: cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     html { scroll-behavior: smooth; }
@@ -38,7 +39,7 @@
       border-radius: 50%;
       pointer-events: none;
       transform: translate(-50%, -50%);
-      transition: width .2s ease, height .2s ease, opacity .2s ease, background .2s ease;
+      transition: width .2s var(--ease), height .2s var(--ease), opacity .2s;
       will-change: transform;
     }
     #cursor-ring {
@@ -48,48 +49,56 @@
       border-radius: 50%;
       pointer-events: none;
       transform: translate(-50%, -50%);
-      transition: width .35s ease, height .35s ease, opacity .35s ease, border-color .2s ease;
+      transition: width .35s var(--ease), height .35s var(--ease), opacity .35s;
       opacity: 0.5;
       will-change: transform;
     }
-    body.cursor-hover #cursor-dot {
-      width: 8px; height: 8px; opacity: 0.9;
-    }
-    body.cursor-hover #cursor-ring {
-      width: 48px; height: 48px; opacity: 0.25;
-    }
-    /* restore pointer on links/buttons for accessibility — keep cursor: none on body */
+    body.cursor-hover #cursor-dot { width: 8px; height: 8px; opacity: 0.9; }
+    body.cursor-hover #cursor-ring { width: 48px; height: 48px; opacity: 0.25; }
     a, button, [onclick] { cursor: none; }
 
     /* ── NAV ── */
     nav {
       position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-      background: rgba(10,10,10,0.92);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border);
-      padding: 1rem 2rem;
+      background: transparent;
+      backdrop-filter: blur(0px);
+      border-bottom: 1px solid transparent;
+      padding: 1.2rem 2rem;
       display: flex; align-items: center; justify-content: space-between;
+      transition: background .4s var(--ease), border-color .4s var(--ease),
+                  padding .4s var(--ease), backdrop-filter .4s;
+    }
+    nav.scrolled {
+      background: rgba(0,0,0,0.95);
+      backdrop-filter: blur(16px);
+      border-bottom-color: var(--orange);
+      padding: 0.7rem 2rem;
     }
     .nav-logo {
       font-size: 1.3rem; font-weight: 900; letter-spacing: 2px;
       color: var(--white);
+      transition: transform .4s var(--ease), font-size .4s var(--ease);
+      transform-origin: left center;
     }
+    nav.scrolled .nav-logo { transform: scale(0.85); }
     .nav-logo span { color: var(--orange); }
     .nav-links { display: flex; gap: 2rem; list-style: none; }
     .nav-links a {
       color: var(--light-gray); text-decoration: none;
       font-size: 0.9rem; letter-spacing: 1px; text-transform: uppercase;
-      transition: color .2s;
+      transition: color .2s, font-size .4s var(--ease);
     }
+    nav.scrolled .nav-links a { font-size: 0.8rem; }
     .nav-links a:hover { color: var(--orange); }
     .nav-order {
       background: var(--orange); color: var(--white);
       padding: 0.5rem 1.2rem; border-radius: 4px;
       text-decoration: none; font-weight: 700; font-size: 0.85rem;
       letter-spacing: 1px; transition: background .2s;
+      position: relative; overflow: hidden;
     }
     .nav-order:hover { background: var(--orange-dark); }
-    .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; }
+    .hamburger { display: none; flex-direction: column; gap: 5px; }
     .hamburger span { width: 24px; height: 2px; background: var(--white); display: block; transition: .3s; }
 
     /* ── HERO ── */
@@ -101,19 +110,37 @@
       position: relative;
       overflow: hidden;
     }
+    #hero-canvas {
+      position: absolute; inset: 0; z-index: 0;
+      pointer-events: none;
+    }
     .hero-bg {
-      position: absolute; inset: 0;
+      position: absolute; inset: 0; z-index: 0;
       background: radial-gradient(ellipse at center, #1a0a00 0%, var(--black) 70%);
     }
     .hero-grid {
-      position: absolute; inset: 0;
+      position: absolute; inset: 0; z-index: 0;
       background-image:
         linear-gradient(var(--border) 1px, transparent 1px),
         linear-gradient(90deg, var(--border) 1px, transparent 1px);
       background-size: 60px 60px;
-      opacity: 0.3;
+      opacity: 0.25;
     }
-    .hero-content { position: relative; z-index: 1; max-width: 800px; }
+    /* parallax layers */
+    .parallax-bg   { position: absolute; inset: 0; z-index: 0; }
+    .parallax-mid  { position: relative; z-index: 1; will-change: transform; }
+    .parallax-fore { position: relative; z-index: 2; will-change: transform; }
+    .hero-burger-float {
+      font-size: 6rem; display: block;
+      margin-bottom: 1.5rem; line-height: 1;
+      will-change: transform;
+      animation: floatBurger 4s ease-in-out infinite;
+    }
+    @keyframes floatBurger {
+      0%,100% { transform: translateY(0); }
+      50%      { transform: translateY(-12px); }
+    }
+    .hero-content { position: relative; z-index: 2; max-width: 800px; }
     .hero-badge {
       display: inline-block;
       background: rgba(255,102,0,0.15); border: 1px solid var(--orange);
@@ -140,14 +167,37 @@
       display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;
       animation: fadeUp .7s .3s ease both;
     }
+
+    /* ── BUTTONS ── */
     .btn-primary {
       background: var(--orange); color: var(--white);
       padding: 1rem 2.5rem; border-radius: 4px;
       text-decoration: none; font-weight: 700; font-size: 1rem;
       letter-spacing: 1px; text-transform: uppercase;
-      transition: all .2s; border: 2px solid var(--orange);
+      border: 2px solid var(--orange);
+      position: relative; overflow: hidden;
+      animation: btnPulse 2s ease-in-out infinite;
+      transition: background .2s, border-color .2s, transform .2s;
     }
-    .btn-primary:hover { background: var(--orange-dark); border-color: var(--orange-dark); transform: translateY(-2px); }
+    .btn-primary:hover {
+      background: var(--orange-dark); border-color: var(--orange-dark);
+      transform: translateY(-2px);
+      animation: none;
+      box-shadow: 0 6px 24px rgba(255,102,0,0.5);
+    }
+    @keyframes btnPulse {
+      0%,100% { box-shadow: 0 0 0 0 rgba(255,102,0,0.5); }
+      50%      { box-shadow: 0 0 0 10px rgba(255,102,0,0); }
+    }
+    .btn-primary .ripple {
+      position: absolute; border-radius: 50%;
+      background: rgba(255,255,255,0.4);
+      transform: scale(0); pointer-events: none;
+      animation: rippleAnim .6s linear forwards;
+    }
+    @keyframes rippleAnim {
+      to { transform: scale(4); opacity: 0; }
+    }
     .btn-outline {
       background: transparent; color: var(--white);
       padding: 1rem 2.5rem; border-radius: 4px;
@@ -156,11 +206,12 @@
       transition: all .2s; border: 2px solid var(--border);
     }
     .btn-outline:hover { border-color: var(--orange); color: var(--orange); transform: translateY(-2px); }
+
     .hero-scroll {
       position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%);
       display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
       color: var(--gray); font-size: 0.75rem; letter-spacing: 2px;
-      animation: bounce 2s infinite;
+      animation: bounce 2s infinite; z-index: 2;
     }
     .hero-scroll svg { width: 20px; height: 20px; }
 
@@ -184,6 +235,23 @@
       font-size: 1.1rem; color: var(--light-gray); line-height: 1.8;
     }
     .brand-statement strong { color: var(--orange); }
+
+    /* stats */
+    .stats-row {
+      display: flex; gap: 3rem; justify-content: center; flex-wrap: wrap;
+      margin-bottom: 3rem;
+    }
+    .stat-item { text-align: center; }
+    .stat-number {
+      font-size: clamp(2.5rem, 6vw, 4rem);
+      font-weight: 900; color: var(--orange); line-height: 1;
+      display: block;
+    }
+    .stat-label {
+      font-size: 0.75rem; letter-spacing: 2px; text-transform: uppercase;
+      color: var(--gray); margin-top: 0.25rem; display: block;
+    }
+
     .pillars {
       display: flex; gap: 2rem; justify-content: center; flex-wrap: wrap;
       max-width: 800px; margin: 0 auto;
@@ -192,7 +260,7 @@
       flex: 1; min-width: 180px;
       background: var(--card); border: 1px solid var(--border);
       border-radius: 8px; padding: 2rem 1.5rem;
-      transition: border-color .2s, transform .2s;
+      transition: border-color .2s var(--ease), transform .2s var(--ease);
     }
     .pillar:hover { border-color: var(--orange); transform: translateY(-4px); }
     .pillar-icon { font-size: 2.5rem; margin-bottom: 1rem; }
@@ -200,10 +268,7 @@
     .pillar p { font-size: 0.85rem; color: var(--gray); }
 
     /* ── MENU ── */
-    #speisekarte {
-      padding: 6rem 2rem;
-      background: var(--black);
-    }
+    #speisekarte { padding: 6rem 2rem; background: var(--black); }
     #speisekarte .section-header { text-align: center; margin-bottom: 3rem; }
     .halal-badge {
       display: inline-flex; align-items: center; gap: 0.5rem;
@@ -218,50 +283,110 @@
     .tab-btn {
       background: var(--card); border: 1px solid var(--border);
       color: var(--gray); padding: 0.6rem 1.2rem;
-      border-radius: 4px; cursor: pointer; font-size: 0.85rem;
+      border-radius: 4px; font-size: 0.85rem;
       letter-spacing: 1px; transition: all .2s;
     }
     .tab-btn:hover, .tab-btn.active {
-      background: var(--orange); border-color: var(--orange);
-      color: var(--white);
+      background: var(--orange); border-color: var(--orange); color: var(--white);
     }
     .tab-panel { display: none; }
     .tab-panel.active { display: block; }
+
+    /* horizontal carousel */
+    .carousel-wrap {
+      position: relative; max-width: 1200px; margin: 0 auto;
+    }
+    .carousel-track-outer {
+      overflow: hidden; position: relative;
+    }
     .menu-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 1.25rem;
-      max-width: 1100px; margin: 0 auto;
+      display: flex; gap: 1.25rem;
+      padding: 1rem 0.25rem 1.5rem;
+      width: max-content;
+      transition: none;
+      will-change: transform;
     }
+
+    /* card flip */
     .menu-card {
+      width: 280px; flex-shrink: 0;
+      perspective: 1000px;
+      cursor: default;
+    }
+    .card-inner {
+      position: relative; width: 100%; height: 100%;
+      transform-style: preserve-3d;
+      transition: transform .5s var(--ease);
+      border-radius: 8px;
+      min-height: 280px;
+    }
+    .menu-card.flipped .card-inner,
+    @media (hover: hover) {
+      .menu-card:hover .card-inner { transform: rotateY(180deg); }
+    }
+    .menu-card.flipped .card-inner { transform: rotateY(180deg); }
+    .card-front, .card-back {
+      position: absolute; inset: 0;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .card-front {
       background: var(--card); border: 1px solid var(--border);
-      border-radius: 8px; overflow: hidden;
-      transition: all .25s; cursor: default;
+      transition: border-color .25s;
+      display: flex; flex-direction: column;
     }
-    .menu-card:hover {
-      border-color: var(--orange); transform: translateY(-4px);
-      box-shadow: 0 8px 30px rgba(255,102,0,0.15);
+    .menu-card:hover .card-front,
+    .menu-card.flipped .card-front { border-color: var(--orange); }
+    .card-back {
+      background: var(--orange); color: var(--black);
+      transform: rotateY(180deg);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 2rem 1.5rem; text-align: center;
     }
+    .card-back h3 { font-size: 1.1rem; font-weight: 900; margin-bottom: 0.75rem; }
+    .card-back p  { font-size: 0.9rem; line-height: 1.5; margin-bottom: 1rem; }
+    .card-back .back-price { font-size: 1.5rem; font-weight: 900; }
+    .card-back .back-tap { font-size: 0.75rem; opacity: 0.7; margin-top: 1rem; }
+
     .menu-img {
       width: 100%; height: 160px;
       background: var(--border);
       display: flex; align-items: center; justify-content: center;
       font-size: 3rem;
     }
-    .menu-info { padding: 1.25rem; }
+    .menu-info { padding: 1.25rem; flex: 1; }
     .menu-info h3 { font-size: 1rem; font-weight: 700; margin-bottom: 0.3rem; }
     .menu-info p { font-size: 0.8rem; color: var(--gray); margin-bottom: 0.75rem; }
-    .menu-price {
-      font-size: 1.1rem; font-weight: 900; color: var(--orange);
+    .menu-price { font-size: 1.1rem; font-weight: 900; color: var(--orange); }
+    .coming-soon-card .card-front { opacity: 0.6; }
+
+    /* carousel arrows */
+    .carousel-arrow {
+      position: absolute; top: 50%; z-index: 10;
+      width: 44px; height: 44px; border-radius: 50%;
+      background: var(--orange); border: none; color: var(--white);
+      font-size: 1.2rem; display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none;
+      transition: opacity .3s, transform .3s var(--ease);
+      transform: translateY(-50%) scale(0.8);
     }
-    .coming-soon-card .menu-img { opacity: 0.5; }
-    .coming-soon-card .menu-info h3 { color: var(--gray); }
+    .carousel-wrap:hover .carousel-arrow { opacity: 1; pointer-events: auto; transform: translateY(-50%) scale(1); }
+    .carousel-arrow:hover { background: var(--orange-dark); }
+    .carousel-arrow.left  { left: -22px; }
+    .carousel-arrow.right { right: -22px; }
+
+    /* card entrance anim */
+    @keyframes cardSlideIn {
+      from { opacity: 0; transform: translateX(40px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    .menu-card.card-visible { animation: cardSlideIn .35s var(--ease) both; }
 
     /* ── FLEISCH ── */
-    #fleisch {
-      padding: 6rem 2rem;
-      background: var(--dark);
-    }
+    #fleisch { padding: 6rem 2rem; background: var(--dark); }
     .fleisch-inner {
       max-width: 900px; margin: 0 auto;
       display: grid; grid-template-columns: 1fr 1fr; gap: 4rem;
@@ -278,10 +403,7 @@
     .fleisch-visual p { color: var(--gray); font-size: 0.9rem; }
 
     /* ── ÖFFNUNGSZEITEN ── */
-    #oeffnungszeiten {
-      padding: 6rem 2rem;
-      background: var(--black);
-    }
+    #oeffnungszeiten { padding: 6rem 2rem; background: var(--black); }
     #oeffnungszeiten .section-header { text-align: center; margin-bottom: 3rem; }
     .location-grid {
       display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;
@@ -301,8 +423,7 @@
     .hours-list { padding: 1.5rem; }
     .hours-row {
       display: flex; justify-content: space-between; align-items: center;
-      padding: 0.6rem 0; border-bottom: 1px solid var(--border);
-      font-size: 0.9rem;
+      padding: 0.6rem 0; border-bottom: 1px solid var(--border); font-size: 0.9rem;
     }
     .hours-row:last-child { border-bottom: none; }
     .hours-row .day { color: var(--gray); }
@@ -313,20 +434,14 @@
       padding: 0.5rem 0; font-size: 0.85rem; color: var(--light-gray);
     }
     .contact-row a { color: var(--orange); text-decoration: none; }
-    .map-card iframe {
-      width: 100%; height: 100%; min-height: 350px; border: none; display: block;
-    }
+    .map-card iframe { width: 100%; height: 100%; min-height: 350px; border: none; display: block; }
 
     /* ── FOOTER ── */
     footer {
       background: var(--dark); border-top: 1px solid var(--border);
-      padding: 3rem 2rem 2rem;
-      text-align: center;
+      padding: 3rem 2rem 2rem; text-align: center;
     }
-    .footer-logo {
-      font-size: 1.5rem; font-weight: 900; letter-spacing: 2px;
-      margin-bottom: 1.5rem;
-    }
+    .footer-logo { font-size: 1.5rem; font-weight: 900; letter-spacing: 2px; margin-bottom: 1.5rem; }
     .footer-logo span { color: var(--orange); }
     .footer-links {
       display: flex; gap: 2rem; justify-content: center; flex-wrap: wrap;
@@ -337,15 +452,12 @@
       letter-spacing: 1px; transition: color .2s;
     }
     .footer-links a:hover { color: var(--orange); }
-    .footer-socials {
-      display: flex; gap: 1rem; justify-content: center; margin-bottom: 2rem;
-    }
+    .footer-socials { display: flex; gap: 1rem; justify-content: center; margin-bottom: 2rem; }
     .social-btn {
       width: 42px; height: 42px; border-radius: 50%;
       background: var(--card); border: 1px solid var(--border);
       display: flex; align-items: center; justify-content: center;
-      text-decoration: none; font-size: 1.1rem;
-      transition: all .2s;
+      text-decoration: none; font-size: 1.1rem; transition: all .2s;
     }
     .social-btn:hover { border-color: var(--orange); background: rgba(255,102,0,0.1); }
     .footer-copy { color: var(--gray); font-size: 0.75rem; letter-spacing: 1px; }
@@ -366,7 +478,7 @@
     }
     .reveal {
       opacity: 0; transform: translateY(40px);
-      transition: opacity .6s ease, transform .6s ease;
+      transition: opacity .6s var(--ease), transform .6s var(--ease);
     }
     .reveal.visible { opacity: 1; transform: translateY(0); }
 
@@ -377,13 +489,15 @@
         display: flex; flex-direction: column;
         position: fixed; top: 60px; left: 0; right: 0;
         background: var(--dark); padding: 1.5rem 2rem; gap: 1.5rem;
-        border-bottom: 1px solid var(--border);
+        border-bottom: 1px solid var(--border); z-index: 99;
       }
       .hamburger { display: flex; }
       .nav-order { display: none; }
       .fleisch-inner { grid-template-columns: 1fr; gap: 2rem; }
       .location-grid { grid-template-columns: 1fr; }
       .hero-title { letter-spacing: -1px; }
+      .menu-card { width: 240px; }
+      .carousel-arrow { display: none; }
     }
   </style>
 </head>
@@ -402,7 +516,7 @@
     <li><a href="#fleisch">Fleisch</a></li>
     <li><a href="#oeffnungszeiten">Standort</a></li>
   </ul>
-  <a class="nav-order" href="https://www.lieferando.at/speisekarte/doktor-burgeric" target="_blank" rel="noopener">Jetzt bestellen</a>
+  <a class="nav-order btn-primary" href="https://www.lieferando.at/speisekarte/doktor-burgeric" target="_blank" rel="noopener">Jetzt bestellen</a>
   <div class="hamburger" id="hamburger" onclick="toggleMenu()">
     <span></span><span></span><span></span>
   </div>
@@ -410,20 +524,28 @@
 
 <!-- HERO -->
 <section id="hero">
-  <div class="hero-bg"></div>
-  <div class="hero-grid"></div>
+  <div class="hero-bg parallax-bg"></div>
+  <div class="hero-grid parallax-bg"></div>
+  <canvas id="hero-canvas"></canvas>
+
   <div class="hero-content">
-    <div class="hero-badge">🩺 Diagnose: Hunger. Rezept: Burger.</div>
-    <h1 class="hero-title">
-      DOKTOR
-      <span class="accent">BURGERIC</span>
-    </h1>
-    <p class="hero-tagline">Burger, <em>Ćevapčići</em> &amp; more · Graz</p>
-    <div class="hero-ctas">
-      <a class="btn-primary" href="https://www.lieferando.at/speisekarte/doktor-burgeric" target="_blank" rel="noopener">Jetzt bestellen</a>
-      <a class="btn-outline" href="#speisekarte">Speisekarte ansehen</a>
+    <div class="parallax-mid" id="pMid">
+      <div class="hero-badge">🩺 Diagnose: Hunger. Rezept: Burger.</div>
+      <span class="hero-burger-float" id="burgerFloat">🍔</span>
+      <h1 class="hero-title">
+        DOKTOR
+        <span class="accent">BURGERIC</span>
+      </h1>
+      <p class="hero-tagline">Burger, <em>Ćevapčići</em> &amp; more · Graz</p>
+    </div>
+    <div class="parallax-fore" id="pFore">
+      <div class="hero-ctas">
+        <a class="btn-primary" href="https://www.lieferando.at/speisekarte/doktor-burgeric" target="_blank" rel="noopener">Jetzt bestellen</a>
+        <a class="btn-outline" href="#speisekarte">Speisekarte ansehen</a>
+      </div>
     </div>
   </div>
+
   <div class="hero-scroll">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
       <path d="M12 5v14M5 12l7 7 7-7"/>
@@ -444,6 +566,23 @@
     Keine langen Wartezeiten. Keine halben Sachen.
     Nur volle Dosen Geschmack – auf Rezept.
   </p>
+
+  <!-- STAT COUNTERS -->
+  <div class="stats-row reveal" id="statsRow">
+    <div class="stat-item">
+      <span class="stat-number" data-target="100" data-suffix="%">0%</span>
+      <span class="stat-label">Halal zertifiziert</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-number" data-target="4.9" data-suffix="★" data-decimal="1">0★</span>
+      <span class="stat-label">Google Bewertung</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-number" data-target="2023" data-suffix="" data-noanim>2023</span>
+      <span class="stat-label">Seit</span>
+    </div>
+  </div>
+
   <div class="pillars reveal">
     <div class="pillar">
       <div class="pillar-icon">🥩</div>
@@ -472,120 +611,74 @@
   </div>
 
   <div class="tabs reveal">
-    <button class="tab-btn active" onclick="switchTab('burger', this)">🍔 Burger</button>
-    <button class="tab-btn" onclick="switchTab('grill', this)">🥙 Vom Grill</button>
-    <button class="tab-btn" onclick="switchTab('fingerfood', this)">🌶️ Fingerfood</button>
-    <button class="tab-btn" onclick="switchTab('hotdog', this)">🌭 Hot Dogs</button>
-    <button class="tab-btn" onclick="switchTab('vegan', this)">🥗 Vegetarisch</button>
-    <button class="tab-btn" onclick="switchTab('dessert', this)">🍦 Dessert</button>
-    <button class="tab-btn" onclick="switchTab('getraenke', this)">🥤 Getränke</button>
+    <button class="tab-btn active" onclick="switchTab('burger',this)">🍔 Burger</button>
+    <button class="tab-btn" onclick="switchTab('grill',this)">🥙 Vom Grill</button>
+    <button class="tab-btn" onclick="switchTab('fingerfood',this)">🌶️ Fingerfood</button>
+    <button class="tab-btn" onclick="switchTab('hotdog',this)">🌭 Hot Dogs</button>
+    <button class="tab-btn" onclick="switchTab('vegan',this)">🥗 Vegetarisch</button>
+    <button class="tab-btn" onclick="switchTab('dessert',this)">🍦 Dessert</button>
+    <button class="tab-btn" onclick="switchTab('getraenke',this)">🥤 Getränke</button>
   </div>
 
   <!-- BURGER -->
   <div class="tab-panel active" id="tab-burger">
-    <div class="menu-grid">
-      <div class="menu-card">
-        <div class="menu-img">🍔</div>
-        <div class="menu-info">
-          <h3>Angus Hamburger</h3>
-          <p>Klassisch & saftig</p>
-          <div class="menu-price">€ 10,20</div>
-        </div>
-      </div>
-      <div class="menu-card">
-        <div class="menu-img">🍔</div>
-        <div class="menu-info">
-          <h3>Angus Cheeseburger</h3>
-          <p>Mit Cheddar überbacken</p>
-          <div class="menu-price">€ 11,60</div>
-        </div>
-      </div>
-      <div class="menu-card">
-        <div class="menu-img">🍔</div>
-        <div class="menu-info">
-          <h3>Double Angus Cheeseburger</h3>
-          <p>Doppelt hält besser</p>
-          <div class="menu-price">€ 15,40</div>
-        </div>
-      </div>
-      <div class="menu-card">
-        <div class="menu-img">🍔</div>
-        <div class="menu-info">
-          <h3>Angus Cheeseburger mit Rinderspeck</h3>
-          <p>Käse + knuspriger Rinderspeck</p>
-          <div class="menu-price">€ 15,30</div>
-        </div>
-      </div>
-      <div class="menu-card">
-        <div class="menu-img">🍔</div>
-        <div class="menu-info">
-          <h3>Double Cheeseburger mit Rinderspeck</h3>
-          <p>Die volle Dosis</p>
-          <div class="menu-price">€ 19,10</div>
-        </div>
-      </div>
-      <div class="menu-card">
-        <div class="menu-img">🍔</div>
-        <div class="menu-info">
-          <h3>Kommando Burger</h3>
-          <p>Für echte Helden</p>
-          <div class="menu-price">€ 11,60</div>
-        </div>
-      </div>
-      <div class="menu-card" style="border-color: var(--orange)">
-        <div class="menu-img">🍔</div>
-        <div class="menu-info">
-          <h3>Mrdr Primarius Burger</h3>
-          <p>Chefarzt-Empfehlung 👨‍⚕️</p>
-          <div class="menu-price">€ 16,50</div>
-        </div>
-      </div>
-      <div class="menu-card">
-        <div class="menu-img">🍗</div>
-        <div class="menu-info">
-          <h3>Crispy Chicken Burger</h3>
-          <p>Knusprig & saftig</p>
-          <div class="menu-price">€ 8,90</div>
-        </div>
-      </div>
-      <div class="menu-card">
-        <div class="menu-img">🍗</div>
-        <div class="menu-info">
-          <h3>Hühner Cordon Bleu Burger</h3>
-          <p>Klassiker neu interpretiert</p>
-          <div class="menu-price">€ 11,10</div>
-        </div>
-      </div>
-      <div class="menu-card">
-        <div class="menu-img">🍗</div>
-        <div class="menu-info">
-          <h3>Putenschnitzel Burger</h3>
-          <p>Leicht & lecker</p>
-          <div class="menu-price">€ 11,90</div>
-        </div>
-      </div>
-      <div class="menu-card">
-        <div class="menu-img">🍔</div>
-        <div class="menu-info">
-          <h3>Double Angus Hamburger</h3>
-          <p>Klassisch im Doppelpack</p>
-          <div class="menu-price">€ 14,10</div>
-        </div>
-      </div>
-      <div class="menu-card">
-        <div class="menu-img">🍔</div>
-        <div class="menu-info">
-          <h3>Angus Hamburger mit Rinderspeck</h3>
-          <p>Mit knusprigem Rinderspeck</p>
-          <div class="menu-price">€ 14,10</div>
-        </div>
-      </div>
-      <div class="menu-card">
-        <div class="menu-img">🍔</div>
-        <div class="menu-info">
-          <h3>Double Angus Hamburger mit Rinderspeck</h3>
-          <p>Die ultimative Kombination</p>
-          <div class="menu-price">€ 17,90</div>
+    <div class="carousel-wrap">
+      <button class="carousel-arrow left" onclick="slideCarousel(this,-1)">&#8592;</button>
+      <button class="carousel-arrow right" onclick="slideCarousel(this,1)">&#8594;</button>
+      <div class="carousel-track-outer">
+        <div class="menu-grid">
+          <div class="menu-card"><div class="card-inner">
+            <div class="card-front"><div class="menu-img">🍔</div><div class="menu-info"><h3>Angus Hamburger</h3><p>Klassisch & saftig</p><div class="menu-price">€ 10,20</div></div></div>
+            <div class="card-back"><h3>Angus Hamburger</h3><p>Saftiges Halal Angus Beef Patty, frisches Salatbett, reife Tomate, Zwiebeln & hausgemachte Sauce im Brioche Bun.</p><div class="back-price">€ 10,20</div><span class="back-tap">↩ zurückklicken</span></div>
+          </div></div>
+          <div class="menu-card"><div class="card-inner">
+            <div class="card-front"><div class="menu-img">🍔</div><div class="menu-info"><h3>Angus Cheeseburger</h3><p>Mit Cheddar überbacken</p><div class="menu-price">€ 11,60</div></div></div>
+            <div class="card-back"><h3>Angus Cheeseburger</h3><p>Halal Angus Patty mit geschmolzenem Cheddar, Salat, Tomate, Zwiebeln & Special Sauce.</p><div class="back-price">€ 11,60</div><span class="back-tap">↩ zurückklicken</span></div>
+          </div></div>
+          <div class="menu-card"><div class="card-inner">
+            <div class="card-front"><div class="menu-img">🍔</div><div class="menu-info"><h3>Double Angus Cheeseburger</h3><p>Doppelt hält besser</p><div class="menu-price">€ 15,40</div></div></div>
+            <div class="card-back"><h3>Double Angus Cheeseburger</h3><p>Zwei Halal Angus Patties, doppelt Cheddar, Salat, Tomate & Spezial-Sauce. Für den großen Hunger.</p><div class="back-price">€ 15,40</div><span class="back-tap">↩ zurückklicken</span></div>
+          </div></div>
+          <div class="menu-card"><div class="card-inner">
+            <div class="card-front"><div class="menu-img">🍔</div><div class="menu-info"><h3>Angus Cheeseburger mit Rinderspeck</h3><p>Käse + knuspriger Rinderspeck</p><div class="menu-price">€ 15,30</div></div></div>
+            <div class="card-back"><h3>Angus Cheeseburger + Rinderspeck</h3><p>Halal Angus Patty, Cheddar, knuspriger Halal Rinderspeck, Salat, Tomate & Sauce.</p><div class="back-price">€ 15,30</div><span class="back-tap">↩ zurückklicken</span></div>
+          </div></div>
+          <div class="menu-card"><div class="card-inner">
+            <div class="card-front"><div class="menu-img">🍔</div><div class="menu-info"><h3>Double Cheeseburger mit Rinderspeck</h3><p>Die volle Dosis</p><div class="menu-price">€ 19,10</div></div></div>
+            <div class="card-back"><h3>Double Cheeseburger + Rinderspeck</h3><p>Doppeltes Angus Patty, doppelt Käse, Rinderspeck – volle Power, voller Geschmack.</p><div class="back-price">€ 19,10</div><span class="back-tap">↩ zurückklicken</span></div>
+          </div></div>
+          <div class="menu-card"><div class="card-inner">
+            <div class="card-front"><div class="menu-img">🍔</div><div class="menu-info"><h3>Kommando Burger</h3><p>Für echte Helden</p><div class="menu-price">€ 11,60</div></div></div>
+            <div class="card-back"><h3>Kommando Burger</h3><p>Unser mutigster Burger – scharfe Jalapeños, Angus Patty, Cheddar & geheime Kommando-Sauce.</p><div class="back-price">€ 11,60</div><span class="back-tap">↩ zurückklicken</span></div>
+          </div></div>
+          <div class="menu-card" style="--card-accent: 1"><div class="card-inner">
+            <div class="card-front" style="border-color: var(--orange)"><div class="menu-img">🍔</div><div class="menu-info"><h3>Mrdr Primarius Burger</h3><p>Chefarzt-Empfehlung 👨‍⚕️</p><div class="menu-price">€ 16,50</div></div></div>
+            <div class="card-back"><h3>Mrdr Primarius Burger</h3><p>Chefarzt-Rezept: doppeltes Angus Patty, Truffle Mayo, karamellisierte Zwiebeln, Rinderspeck & Premium Cheddar.</p><div class="back-price">€ 16,50</div><span class="back-tap">↩ zurückklicken</span></div>
+          </div></div>
+          <div class="menu-card"><div class="card-inner">
+            <div class="card-front"><div class="menu-img">🍗</div><div class="menu-info"><h3>Crispy Chicken Burger</h3><p>Knusprig & saftig</p><div class="menu-price">€ 8,90</div></div></div>
+            <div class="card-back"><h3>Crispy Chicken Burger</h3><p>Knusprig frittiertes Hähnchen, Coleslaw, Pickles & Honig-Senf-Sauce im weichen Bun.</p><div class="back-price">€ 8,90</div><span class="back-tap">↩ zurückklicken</span></div>
+          </div></div>
+          <div class="menu-card"><div class="card-inner">
+            <div class="card-front"><div class="menu-img">🍗</div><div class="menu-info"><h3>Hühner Cordon Bleu Burger</h3><p>Klassiker neu interpretiert</p><div class="menu-price">€ 11,10</div></div></div>
+            <div class="card-back"><h3>Hühner Cordon Bleu Burger</h3><p>Hähnchen Cordon Bleu Style – mit Käse & Schinken gefüllt, paniert & frittiert, auf frischem Salat.</p><div class="back-price">€ 11,10</div><span class="back-tap">↩ zurückklicken</span></div>
+          </div></div>
+          <div class="menu-card"><div class="card-inner">
+            <div class="card-front"><div class="menu-img">🍗</div><div class="menu-info"><h3>Putenschnitzel Burger</h3><p>Leicht & lecker</p><div class="menu-price">€ 11,90</div></div></div>
+            <div class="card-back"><h3>Putenschnitzel Burger</h3><p>Zartes Putenschnitzel, paniert & knusprig, mit Salat, Tomate & Remoulade.</p><div class="back-price">€ 11,90</div><span class="back-tap">↩ zurückklicken</span></div>
+          </div></div>
+          <div class="menu-card"><div class="card-inner">
+            <div class="card-front"><div class="menu-img">🍔</div><div class="menu-info"><h3>Double Angus Hamburger</h3><p>Klassisch im Doppelpack</p><div class="menu-price">€ 14,10</div></div></div>
+            <div class="card-back"><h3>Double Angus Hamburger</h3><p>Zwei klassische Halal Angus Patties, doppelt Salat, Tomate & Zwiebeln.</p><div class="back-price">€ 14,10</div><span class="back-tap">↩ zurückklicken</span></div>
+          </div></div>
+          <div class="menu-card"><div class="card-inner">
+            <div class="card-front"><div class="menu-img">🍔</div><div class="menu-info"><h3>Angus Hamburger mit Rinderspeck</h3><p>Mit knusprigem Rinderspeck</p><div class="menu-price">€ 14,10</div></div></div>
+            <div class="card-back"><h3>Angus Hamburger + Rinderspeck</h3><p>Klassischer Angus Hamburger aufgewertet mit knusprigem Halal Rinderspeck.</p><div class="back-price">€ 14,10</div><span class="back-tap">↩ zurückklicken</span></div>
+          </div></div>
+          <div class="menu-card"><div class="card-inner">
+            <div class="card-front"><div class="menu-img">🍔</div><div class="menu-info"><h3>Double Angus Hamburger mit Rinderspeck</h3><p>Die ultimative Kombination</p><div class="menu-price">€ 17,90</div></div></div>
+            <div class="card-back"><h3>Double Angus + Rinderspeck</h3><p>Doppeltes Angus Patty, doppelt Rinderspeck – die ultimative Kombination für Fleischliebhaber.</p><div class="back-price">€ 17,90</div><span class="back-tap">↩ zurückklicken</span></div>
+          </div></div>
         </div>
       </div>
     </div>
@@ -593,110 +686,72 @@
 
   <!-- VOM GRILL -->
   <div class="tab-panel" id="tab-grill">
-    <div class="menu-grid">
-      <div class="menu-card">
-        <div class="menu-img">🥙</div>
-        <div class="menu-info">
-          <h3>Pljeskavica im Fladenbrot</h3>
-          <p>Balkan-Klassiker vom Grill</p>
-          <div class="menu-price">€ 12,90</div>
-        </div>
-      </div>
-      <div class="menu-card">
-        <div class="menu-img">🥩</div>
-        <div class="menu-info">
-          <h3>Ćevapčići 5 Stück</h3>
-          <p>Frisch gegrillt, nach Hausrezept</p>
-          <div class="menu-price">€ 11,10</div>
-        </div>
-      </div>
-      <div class="menu-card">
-        <div class="menu-img">🥩</div>
-        <div class="menu-info">
-          <h3>Ćevapčići 7 Stück</h3>
-          <p>Für den etwas größeren Hunger</p>
-          <div class="menu-price">€ 13,30</div>
-        </div>
-      </div>
-      <div class="menu-card" style="border-color: var(--orange)">
-        <div class="menu-img">🥩</div>
-        <div class="menu-info">
-          <h3>Ćevapčići 10 Stück</h3>
-          <p>Für die volle Behandlung 🩺</p>
-          <div class="menu-price">€ 16,80</div>
+    <div class="carousel-wrap">
+      <button class="carousel-arrow left" onclick="slideCarousel(this,-1)">&#8592;</button>
+      <button class="carousel-arrow right" onclick="slideCarousel(this,1)">&#8594;</button>
+      <div class="carousel-track-outer">
+        <div class="menu-grid">
+          <div class="menu-card"><div class="card-inner">
+            <div class="card-front"><div class="menu-img">🥙</div><div class="menu-info"><h3>Pljeskavica im Fladenbrot</h3><p>Balkan-Klassiker vom Grill</p><div class="menu-price">€ 12,90</div></div></div>
+            <div class="card-back"><h3>Pljeskavica im Fladenbrot</h3><p>Traditionelle serbische Grillfrikadelle aus Halal Rinderhack, im frischen Fladenbrot mit Ajvar & Zwiebeln.</p><div class="back-price">€ 12,90</div><span class="back-tap">↩ zurückklicken</span></div>
+          </div></div>
+          <div class="menu-card"><div class="card-inner">
+            <div class="card-front"><div class="menu-img">🥩</div><div class="menu-info"><h3>Ćevapčići 5 Stück</h3><p>Frisch gegrillt, nach Hausrezept</p><div class="menu-price">€ 11,10</div></div></div>
+            <div class="card-back"><h3>Ćevapčići 5 Stück</h3><p>Fünf handgemachte Halal Rindfleisch-Ćevapčići, direkt vom Grill – mit Ajvar, Zwiebeln & Fladenbrot.</p><div class="back-price">€ 11,10</div><span class="back-tap">↩ zurückklicken</span></div>
+          </div></div>
+          <div class="menu-card"><div class="card-inner">
+            <div class="card-front"><div class="menu-img">🥩</div><div class="menu-info"><h3>Ćevapčići 7 Stück</h3><p>Für den etwas größeren Hunger</p><div class="menu-price">€ 13,30</div></div></div>
+            <div class="card-back"><h3>Ćevapčići 7 Stück</h3><p>Sieben handgemachte Ćevapčići vom Grill – mehr Genuss, mehr Balkan Soul.</p><div class="back-price">€ 13,30</div><span class="back-tap">↩ zurückklicken</span></div>
+          </div></div>
+          <div class="menu-card" style="--card-accent:1"><div class="card-inner">
+            <div class="card-front" style="border-color:var(--orange)"><div class="menu-img">🥩</div><div class="menu-info"><h3>Ćevapčići 10 Stück</h3><p>Für die volle Behandlung 🩺</p><div class="menu-price">€ 16,80</div></div></div>
+            <div class="card-back"><h3>Ćevapčići 10 Stück</h3><p>Die volle Dosis Balkan-Grill – zehn Ćevapčići mit Beilagen. Ärztlich empfohlen bei schwerem Hunger.</p><div class="back-price">€ 16,80</div><span class="back-tap">↩ zurückklicken</span></div>
+          </div></div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- FINGERFOOD -->
+  <!-- COMING SOON TABS -->
   <div class="tab-panel" id="tab-fingerfood">
-    <div class="menu-grid">
-      <div class="menu-card coming-soon-card">
-        <div class="menu-img">🌶️</div>
-        <div class="menu-info">
-          <h3>Fingerfood & Saucen</h3>
-          <p>Fotos folgen – bald verfügbar</p>
-          <div class="menu-price" style="color: var(--gray)">demnächst</div>
-        </div>
-      </div>
-    </div>
+    <div class="carousel-wrap"><div class="carousel-track-outer"><div class="menu-grid">
+      <div class="menu-card coming-soon-card"><div class="card-inner">
+        <div class="card-front"><div class="menu-img">🌶️</div><div class="menu-info"><h3>Fingerfood & Saucen</h3><p>Fotos folgen – bald verfügbar</p><div class="menu-price" style="color:var(--gray)">demnächst</div></div></div>
+        <div class="card-back" style="background:var(--border)"><h3>Bald verfügbar</h3><p>Unsere Fingerfood-Karte wird gerade zusammengestellt.</p></div>
+      </div></div>
+    </div></div></div>
   </div>
-
-  <!-- HOT DOGS -->
   <div class="tab-panel" id="tab-hotdog">
-    <div class="menu-grid">
-      <div class="menu-card coming-soon-card">
-        <div class="menu-img">🌭</div>
-        <div class="menu-info">
-          <h3>Hot Dogs</h3>
-          <p>Fotos folgen – bald verfügbar</p>
-          <div class="menu-price" style="color: var(--gray)">demnächst</div>
-        </div>
-      </div>
-    </div>
+    <div class="carousel-wrap"><div class="carousel-track-outer"><div class="menu-grid">
+      <div class="menu-card coming-soon-card"><div class="card-inner">
+        <div class="card-front"><div class="menu-img">🌭</div><div class="menu-info"><h3>Hot Dogs</h3><p>Fotos folgen – bald verfügbar</p><div class="menu-price" style="color:var(--gray)">demnächst</div></div></div>
+        <div class="card-back" style="background:var(--border)"><h3>Bald verfügbar</h3><p>Hot Dog Karte kommt bald.</p></div>
+      </div></div>
+    </div></div></div>
   </div>
-
-  <!-- VEGAN -->
   <div class="tab-panel" id="tab-vegan">
-    <div class="menu-grid">
-      <div class="menu-card coming-soon-card">
-        <div class="menu-img">🥗</div>
-        <div class="menu-info">
-          <h3>Vegetarisch / Vegan</h3>
-          <p>Fotos folgen – bald verfügbar</p>
-          <div class="menu-price" style="color: var(--gray)">demnächst</div>
-        </div>
-      </div>
-    </div>
+    <div class="carousel-wrap"><div class="carousel-track-outer"><div class="menu-grid">
+      <div class="menu-card coming-soon-card"><div class="card-inner">
+        <div class="card-front"><div class="menu-img">🥗</div><div class="menu-info"><h3>Vegetarisch / Vegan</h3><p>Fotos folgen – bald verfügbar</p><div class="menu-price" style="color:var(--gray)">demnächst</div></div></div>
+        <div class="card-back" style="background:var(--border)"><h3>Bald verfügbar</h3><p>Vegane & vegetarische Optionen folgen.</p></div>
+      </div></div>
+    </div></div></div>
   </div>
-
-  <!-- DESSERT -->
   <div class="tab-panel" id="tab-dessert">
-    <div class="menu-grid">
-      <div class="menu-card coming-soon-card">
-        <div class="menu-img">🍦</div>
-        <div class="menu-info">
-          <h3>Dessert</h3>
-          <p>Fotos folgen – bald verfügbar</p>
-          <div class="menu-price" style="color: var(--gray)">demnächst</div>
-        </div>
-      </div>
-    </div>
+    <div class="carousel-wrap"><div class="carousel-track-outer"><div class="menu-grid">
+      <div class="menu-card coming-soon-card"><div class="card-inner">
+        <div class="card-front"><div class="menu-img">🍦</div><div class="menu-info"><h3>Dessert</h3><p>Fotos folgen – bald verfügbar</p><div class="menu-price" style="color:var(--gray)">demnächst</div></div></div>
+        <div class="card-back" style="background:var(--border)"><h3>Bald verfügbar</h3><p>Süße Nachspeisen kommen bald.</p></div>
+      </div></div>
+    </div></div></div>
   </div>
-
-  <!-- GETRÄNKE -->
   <div class="tab-panel" id="tab-getraenke">
-    <div class="menu-grid">
-      <div class="menu-card coming-soon-card">
-        <div class="menu-img">🥤</div>
-        <div class="menu-info">
-          <h3>Getränke</h3>
-          <p>Fotos folgen – bald verfügbar</p>
-          <div class="menu-price" style="color: var(--gray)">demnächst</div>
-        </div>
-      </div>
-    </div>
+    <div class="carousel-wrap"><div class="carousel-track-outer"><div class="menu-grid">
+      <div class="menu-card coming-soon-card"><div class="card-inner">
+        <div class="card-front"><div class="menu-img">🥤</div><div class="menu-info"><h3>Getränke</h3><p>Fotos folgen – bald verfügbar</p><div class="menu-price" style="color:var(--gray)">demnächst</div></div></div>
+        <div class="card-back" style="background:var(--border)"><h3>Bald verfügbar</h3><p>Getränkekarte folgt in Kürze.</p></div>
+      </div></div>
+    </div></div></div>
   </div>
 </section>
 
@@ -719,7 +774,7 @@
     </div>
     <div class="fleisch-visual reveal">
       <span class="big-emoji">🥩</span>
-      <h3 style="font-size:1.2rem; margin-bottom:.5rem;">Kühltruhe im Shop</h3>
+      <h3 style="font-size:1.2rem;margin-bottom:.5rem;">Kühltruhe im Shop</h3>
       <p>Halal Angus Rindfleisch<br>frisch & direkt verfügbar</p>
     </div>
   </div>
@@ -735,29 +790,14 @@
     <div class="hours-card reveal">
       <div class="card-header"><span>🕐</span> Öffnungszeiten</div>
       <div class="hours-list">
-        <div class="hours-row">
-          <span class="day">Montag – Freitag</span>
-          <span class="time">10:00 – 20:00</span>
-        </div>
-        <div class="hours-row">
-          <span class="day">Samstag</span>
-          <span class="time">12:00 – 20:00</span>
-        </div>
-        <div class="hours-row">
-          <span class="day">Sonntag</span>
-          <span class="time">12:00 – 20:00</span>
-        </div>
+        <div class="hours-row"><span class="day">Montag – Freitag</span><span class="time">10:00 – 20:00</span></div>
+        <div class="hours-row"><span class="day">Samstag</span><span class="time">12:00 – 20:00</span></div>
+        <div class="hours-row"><span class="day">Sonntag</span><span class="time">12:00 – 20:00</span></div>
       </div>
       <div class="contact-info">
-        <div class="contact-row">
-          📍 <span>Riesstraße 16, 8010 Graz</span>
-        </div>
-        <div class="contact-row">
-          📞 <a href="tel:+4369010181484">0690 10181484</a>
-        </div>
-        <div class="contact-row">
-          🛵 <a href="https://www.lieferando.at/speisekarte/doktor-burgeric" target="_blank" rel="noopener">Lieferando Bestellung</a>
-        </div>
+        <div class="contact-row">📍 <span>Riesstraße 16, 8010 Graz</span></div>
+        <div class="contact-row">📞 <a href="tel:+4369010181484">0690 10181484</a></div>
+        <div class="contact-row">🛵 <a href="https://www.lieferando.at/speisekarte/doktor-burgeric" target="_blank" rel="noopener">Lieferando Bestellung</a></div>
       </div>
     </div>
     <div class="map-card reveal">
@@ -789,116 +829,317 @@
 </footer>
 
 <script>
-  // Mobile menu
-  function toggleMenu() {
-    document.getElementById('navLinks').classList.toggle('open');
+/* ═══════════════════════════════════════════════
+   MOBILE MENU
+═══════════════════════════════════════════════ */
+function toggleMenu() {
+  document.getElementById('navLinks').classList.toggle('open');
+}
+
+/* ═══════════════════════════════════════════════
+   6. STICKY HEADER MORPH
+═══════════════════════════════════════════════ */
+const navbar = document.getElementById('navbar');
+window.addEventListener('scroll', () => {
+  navbar.classList.toggle('scrolled', window.scrollY > 80);
+}, { passive: true });
+
+/* ═══════════════════════════════════════════════
+   SCROLL REVEAL
+═══════════════════════════════════════════════ */
+const revealObs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('visible'); revealObs.unobserve(e.target); }
+  });
+}, { threshold: 0.1 });
+document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
+
+/* ═══════════════════════════════════════════════
+   2. HERO PARTICLE / EMBER CANVAS
+═══════════════════════════════════════════════ */
+(function() {
+  const canvas = document.getElementById('hero-canvas');
+  const ctx = canvas.getContext('2d');
+  const COUNT = 120;
+  let W, H, particles;
+
+  function resize() {
+    W = canvas.width  = canvas.offsetWidth;
+    H = canvas.height = canvas.offsetHeight;
+  }
+  window.addEventListener('resize', resize, { passive: true });
+  resize();
+
+  function rand(a, b) { return a + Math.random() * (b - a); }
+
+  function makeParticle() {
+    return {
+      x:     rand(0, W),
+      y:     rand(0, H),
+      r:     rand(1, 4),
+      vx:    rand(-0.4, 0.4),
+      vy:    rand(-0.5, -1.2),
+      alpha: rand(0, 1),
+      dAlpha: rand(0.003, 0.008) * (Math.random() < 0.5 ? 1 : -1),
+      orange: Math.random() < 0.6,
+    };
   }
 
-  // Tab switching
-  function switchTab(id, btn) {
-    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById('tab-' + id).classList.add('active');
-    btn.classList.add('active');
+  particles = Array.from({ length: COUNT }, makeParticle);
+
+  function drawFrame() {
+    ctx.clearRect(0, 0, W, H);
+    particles.forEach(p => {
+      p.x += p.vx;
+      p.y += p.vy;
+      p.alpha += p.dAlpha;
+
+      if (p.alpha <= 0 || p.alpha >= 1) p.dAlpha *= -1;
+      if (p.y < -10) { p.y = H + 10; p.x = rand(0, W); }
+      if (p.x < -10) p.x = W + 10;
+      if (p.x > W + 10) p.x = -10;
+
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = p.orange
+        ? `rgba(255,102,0,${p.alpha * 0.55})`
+        : `rgba(255,255,255,${p.alpha * 0.25})`;
+      ctx.fill();
+    });
+    requestAnimationFrame(drawFrame);
+  }
+  drawFrame();
+})();
+
+/* ═══════════════════════════════════════════════
+   7. PARALLAX HERO
+═══════════════════════════════════════════════ */
+(function() {
+  const pMid   = document.getElementById('pMid');
+  const pFore  = document.getElementById('pFore');
+  const burger = document.getElementById('burgerFloat');
+  let ticking = false;
+  function onScroll() {
+    if (!ticking) {
+      requestAnimationFrame(() => {
+        const s = window.scrollY;
+        pMid.style.transform   = `translateY(${s * 0.5}px)`;
+        burger.style.transform = `translateY(${s * -0.2}px)`;
+        // pFore stays fixed (no transform)
+        ticking = false;
+      });
+      ticking = true;
+    }
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+})();
+
+/* ═══════════════════════════════════════════════
+   5. STAT COUNTERS
+═══════════════════════════════════════════════ */
+(function() {
+  const easeOut = t => 1 - Math.pow(1 - t, 3);
+  const DURATION = 1500;
+
+  function animateStat(el) {
+    if (el.dataset.animated) return;
+    el.dataset.animated = '1';
+    const target  = parseFloat(el.dataset.target);
+    const suffix  = el.dataset.suffix || '';
+    const decimal = parseInt(el.dataset.decimal || '0');
+    const start   = performance.now();
+
+    function step(now) {
+      const t = Math.min((now - start) / DURATION, 1);
+      const val = target * easeOut(t);
+      el.textContent = val.toFixed(decimal) + suffix;
+      if (t < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
   }
 
-  // Scroll reveal
-  const observer = new IntersectionObserver((entries) => {
+  const statsObs = new IntersectionObserver(entries => {
     entries.forEach(e => {
       if (e.isIntersecting) {
-        e.target.classList.add('visible');
-        observer.unobserve(e.target);
+        e.currentTarget.querySelectorAll('.stat-number').forEach(animateStat);
+        statsObs.unobserve(e.currentTarget);
       }
     });
-  }, { threshold: 0.1 });
+  }, { threshold: 0.3 });
 
-  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+  const row = document.getElementById('statsRow');
+  if (row) statsObs.observe(row);
+})();
 
-  // Navbar scroll effect
-  window.addEventListener('scroll', () => {
-    const nav = document.getElementById('navbar');
-    nav.style.background = window.scrollY > 50
-      ? 'rgba(10,10,10,0.98)'
-      : 'rgba(10,10,10,0.92)';
+/* ═══════════════════════════════════════════════
+   8. BTN-PRIMARY RIPPLE
+═══════════════════════════════════════════════ */
+document.querySelectorAll('.btn-primary').forEach(btn => {
+  btn.addEventListener('click', function(e) {
+    const rect = this.getBoundingClientRect();
+    const size = Math.max(rect.width, rect.height);
+    const x = e.clientX - rect.left - size / 2;
+    const y = e.clientY - rect.top  - size / 2;
+    const ripple = document.createElement('span');
+    ripple.className = 'ripple';
+    ripple.style.cssText = `width:${size}px;height:${size}px;left:${x}px;top:${y}px`;
+    this.appendChild(ripple);
+    setTimeout(() => ripple.remove(), 650);
+  });
+});
+
+/* ═══════════════════════════════════════════════
+   3. HORIZONTAL CAROUSEL (drag + inertia)
+═══════════════════════════════════════════════ */
+function initCarousel(track) {
+  let isDown = false, startX = 0, scrollLeft = 0;
+  let velX = 0, lastX = 0, rafId = null;
+
+  track.addEventListener('mousedown', e => {
+    isDown = true; track.style.cursor = 'grabbing';
+    startX = e.pageX - track.offsetLeft;
+    scrollLeft = track._scroll || 0;
+    lastX = e.pageX;
+    cancelAnimationFrame(rafId);
+    velX = 0;
+  });
+  document.addEventListener('mouseup', () => {
+    if (!isDown) return;
+    isDown = false; track.style.cursor = '';
+    inertia();
+  });
+  document.addEventListener('mousemove', e => {
+    if (!isDown) return;
+    e.preventDefault();
+    const x = e.pageX - track.offsetLeft;
+    const walk = (x - startX);
+    velX = e.pageX - lastX;
+    lastX = e.pageX;
+    applyScroll(track, scrollLeft - walk);
   });
 
-  // ── CUSTOM CURSOR ──
+  // Touch
+  track.addEventListener('touchstart', e => {
+    startX = e.touches[0].pageX;
+    scrollLeft = track._scroll || 0;
+    lastX = startX; velX = 0;
+    cancelAnimationFrame(rafId);
+  }, { passive: true });
+  track.addEventListener('touchmove', e => {
+    const dx = startX - e.touches[0].pageX;
+    velX = -(e.touches[0].pageX - lastX);
+    lastX = e.touches[0].pageX;
+    applyScroll(track, scrollLeft + dx);
+  }, { passive: true });
+  track.addEventListener('touchend', () => { inertia(); });
+
+  function inertia() {
+    if (Math.abs(velX) < 0.5) return;
+    velX *= 0.92;
+    applyScroll(track, (track._scroll || 0) + velX);
+    rafId = requestAnimationFrame(inertia);
+  }
+}
+
+function applyScroll(track, val) {
+  const max = track.scrollWidth - track.parentElement.offsetWidth;
+  track._scroll = Math.max(0, Math.min(val, max));
+  track.style.transform = `translateX(${-track._scroll}px)`;
+}
+
+function slideCarousel(btn, dir) {
+  const track = btn.closest('.carousel-wrap').querySelector('.menu-grid');
+  const step = 300;
+  applyScroll(track, (track._scroll || 0) + dir * step);
+}
+
+document.querySelectorAll('.menu-grid').forEach(initCarousel);
+
+/* ═══════════════════════════════════════════════
+   3+4. TAB SWITCH (re-init flip & carousel)
+═══════════════════════════════════════════════ */
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  const panel = document.getElementById('tab-' + id);
+  panel.classList.add('active');
+  btn.classList.add('active');
+  // animate cards in
+  panel.querySelectorAll('.menu-card').forEach((c, i) => {
+    c.classList.remove('card-visible');
+    setTimeout(() => c.classList.add('card-visible'), i * 60);
+  });
+}
+
+// Initial animation for visible tab
+document.querySelectorAll('#tab-burger .menu-card').forEach((c, i) => {
+  setTimeout(() => c.classList.add('card-visible'), i * 60);
+});
+
+/* ═══════════════════════════════════════════════
+   4. CARD FLIP (touch / click for mobile)
+═══════════════════════════════════════════════ */
+let isTouchDevice = false;
+window.addEventListener('touchstart', () => { isTouchDevice = true; }, { once: true });
+
+document.querySelectorAll('.menu-grid').forEach(grid => {
+  grid.addEventListener('click', e => {
+    if (!isTouchDevice) return;
+    const card = e.target.closest('.menu-card');
+    if (!card) return;
+    card.classList.toggle('flipped');
+  });
+});
+
+/* ═══════════════════════════════════════════════
+   1. CUSTOM CURSOR
+═══════════════════════════════════════════════ */
+(function() {
   const dot  = document.getElementById('cursor-dot');
   const ring = document.getElementById('cursor-ring');
-
-  // Raw mouse position
-  let mx = -200, my = -200;
-  // Lerped ring position
-  let rx = -200, ry = -200;
-
-  document.addEventListener('mousemove', e => {
-    mx = e.clientX;
-    my = e.clientY;
-  });
-
-  // Magnetic targets
-  const MAGNETIC_SELECTOR = 'a, button, .menu-card, .pillar, .tab-btn';
-  const MAX_OFFSET = 8;
-
+  let mx = -200, my = -200, rx = -200, ry = -200;
   let activeTarget = null;
+  const MAX_OFFSET = 8;
+  const MAGNETIC = 'a, button, .menu-card, .pillar, .tab-btn';
 
+  document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
   document.addEventListener('mouseover', e => {
-    const el = e.target.closest(MAGNETIC_SELECTOR);
-    if (el) {
-      activeTarget = el;
-      document.body.classList.add('cursor-hover');
-    }
+    const el = e.target.closest(MAGNETIC);
+    if (el) { activeTarget = el; document.body.classList.add('cursor-hover'); }
   });
   document.addEventListener('mouseout', e => {
-    const el = e.target.closest(MAGNETIC_SELECTOR);
+    const el = e.target.closest(MAGNETIC);
     if (el && el === activeTarget) {
-      // Reset magnetic offset
-      el.style.transform = '';
-      activeTarget = null;
+      el.style.transform = ''; activeTarget = null;
       document.body.classList.remove('cursor-hover');
     }
   });
+  document.addEventListener('mouseleave', () => { dot.style.opacity = '0'; ring.style.opacity = '0'; });
+  document.addEventListener('mouseenter', () => { dot.style.opacity = ''; ring.style.opacity = ''; });
 
   function lerp(a, b, t) { return a + (b - a) * t; }
 
   function tick() {
-    // Dot follows cursor instantly
     dot.style.transform  = `translate(calc(${mx}px - 50%), calc(${my}px - 50%))`;
-
-    // Ring lerps behind
-    rx = lerp(rx, mx, 0.12);
-    ry = lerp(ry, my, 0.12);
+    rx = lerp(rx, mx, 0.12); ry = lerp(ry, my, 0.12);
     ring.style.transform = `translate(calc(${rx}px - 50%), calc(${ry}px - 50%))`;
 
-    // Magnetic pull on active element
     if (activeTarget) {
       const rect = activeTarget.getBoundingClientRect();
       const cx = rect.left + rect.width  / 2;
       const cy = rect.top  + rect.height / 2;
-      const dx = mx - cx;
-      const dy = my - cy;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      const maxDist = Math.max(rect.width, rect.height);
-      const strength = Math.max(0, 1 - dist / maxDist);
-      const ox = dx * strength * MAX_OFFSET / (maxDist / 2 || 1);
-      const oy = dy * strength * MAX_OFFSET / (maxDist / 2 || 1);
-      activeTarget.style.transform = `translate(${ox.toFixed(2)}px, ${oy.toFixed(2)}px)`;
+      const dx = mx - cx, dy = my - cy;
+      const maxD = Math.max(rect.width, rect.height);
+      const str = Math.max(0, 1 - Math.sqrt(dx*dx+dy*dy) / maxD);
+      const ox = dx * str * MAX_OFFSET / (maxD / 2 || 1);
+      const oy = dy * str * MAX_OFFSET / (maxD / 2 || 1);
+      activeTarget.style.transform = `translate(${ox.toFixed(2)}px,${oy.toFixed(2)}px)`;
       activeTarget.style.transition = 'transform 0.12s ease';
     }
-
     requestAnimationFrame(tick);
   }
   requestAnimationFrame(tick);
-
-  // Hide cursor when leaving window
-  document.addEventListener('mouseleave', () => {
-    dot.style.opacity  = '0';
-    ring.style.opacity = '0';
-  });
-  document.addEventListener('mouseenter', () => {
-    dot.style.opacity  = '';
-    ring.style.opacity = '';
-  });
+})();
 </script>
 </body>
 </html>
