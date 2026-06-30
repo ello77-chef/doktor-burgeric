@@ -381,12 +381,16 @@
       backface-visibility: hidden;
       -webkit-backface-visibility: hidden;
       border-radius: 8px;
-      overflow: hidden;
+      /* overflow:hidden disabled — it breaks preserve-3d in Chrome/Safari;
+         child elements handle their own border-radius */
     }
     .card-front {
       background: var(--card); border: 1px solid var(--border);
       transition: border-color .25s;
       display: flex; flex-direction: column;
+      transform: rotateY(0deg); /* explicit — prevents mirroring artefact */
+      border-radius: 8px;
+      overflow: hidden; /* safe on front because it never rotates */
     }
     .menu-card:hover .card-front,
     .menu-card.flipped .card-front { border-color: var(--orange); }
@@ -412,6 +416,66 @@
     .menu-info h3 { font-size: 1rem; font-weight: 700; margin-bottom: 0.3rem; }
     .menu-info p { font-size: 0.8rem; color: var(--gray); margin-bottom: 0.75rem; }
     .menu-price { font-size: 1.1rem; font-weight: 900; color: var(--orange); }
+
+    /* ── RX CTA BANNER ── */
+    .rx-banner {
+      width: 100%;
+      background: var(--dark);
+      border-top: 1px solid var(--orange);
+      border-bottom: 1px solid var(--orange);
+      padding: 60px 2rem;
+      text-align: center;
+      margin-top: 3rem;
+    }
+    .rx-eyebrow {
+      display: block;
+      font-size: 0.7rem; letter-spacing: 4px; text-transform: uppercase;
+      color: var(--orange); margin-bottom: 1.25rem;
+      opacity: 0; transform: translateY(0);
+      transition: opacity .4s ease 200ms;
+    }
+    .rx-headline {
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 900; text-transform: uppercase;
+      line-height: 1.05; color: var(--white);
+      margin-bottom: 1.25rem;
+      opacity: 0; transform: translateY(20px);
+      transition: opacity .5s ease 400ms, transform .5s cubic-bezier(0.25,0.46,0.45,0.94) 400ms;
+    }
+    .rx-subline {
+      font-size: clamp(0.95rem, 2vw, 1.2rem);
+      color: var(--light-gray); margin-bottom: 2.5rem;
+      max-width: 600px; margin-left: auto; margin-right: auto;
+      opacity: 0; transform: translateY(20px);
+      transition: opacity .5s ease 600ms, transform .5s cubic-bezier(0.25,0.46,0.45,0.94) 600ms;
+    }
+    .rx-cta-wrap {
+      opacity: 0; transform: scale(0.9);
+      transition: opacity .4s ease 800ms, transform .4s cubic-bezier(0.25,0.46,0.45,0.94) 800ms;
+      margin-bottom: 1.5rem;
+    }
+    .rx-cta {
+      display: inline-block;
+      background: var(--orange); color: var(--black);
+      padding: 1.1rem 3rem; border-radius: 50px;
+      font-size: 1.1rem; font-weight: 900; letter-spacing: 1px;
+      text-decoration: none; text-transform: uppercase;
+      position: relative; overflow: hidden;
+      animation: btnPulse 2s ease-in-out infinite;
+      transition: background .2s, transform .2s;
+    }
+    .rx-cta:hover { background: var(--orange-dark); transform: translateY(-2px); }
+    .rx-disclaimer {
+      font-size: 0.75rem; color: var(--gray); letter-spacing: 0.5px;
+      opacity: 0;
+      transition: opacity .4s ease 1000ms;
+    }
+    .rx-banner.rx-visible .rx-eyebrow   { opacity: 1; }
+    .rx-banner.rx-visible .rx-headline  { opacity: 1; transform: translateY(0); }
+    .rx-banner.rx-visible .rx-subline   { opacity: 1; transform: translateY(0); margin-bottom: 2.5rem; }
+    .rx-banner.rx-visible .rx-cta-wrap  { opacity: 1; transform: scale(1); }
+    .rx-banner.rx-visible .rx-disclaimer { opacity: 1; }
+
     .coming-soon-card .card-front { opacity: 0.6; }
 
     /* ── FLEISCH ── */
@@ -791,6 +855,20 @@
 
     </div><!-- /categories-track -->
   </div><!-- /categories-viewport -->
+
+  <!-- RX CTA BANNER -->
+  <div class="rx-banner" id="rxBanner">
+    <span class="rx-eyebrow">&#196;rztliche Empfehlung</span>
+    <h2 class="rx-headline">Zu viel Hunger ist gef&#228;hrlich.</h2>
+    <p class="rx-subline">Einnahme: sofort. Dosierung: eine Bestellung.<br>Wirkt innerhalb von 30 Minuten.</p>
+    <div class="rx-cta-wrap">
+      <a class="rx-cta" href="https://www.lieferando.at/speisekarte/doktor-burgeric" target="_blank" rel="noopener">
+        Jetzt auf Lieferando bestellen &#x2192;
+      </a>
+    </div>
+    <p class="rx-disclaimer">* Nebenwirkungen: Suchtgefahr. Wiederholte Einnahme ausdr&#252;cklich erw&#252;nscht.</p>
+  </div>
+
 </section>
 
 <!-- FLEISCH AUS DER KÜHLTRUHE -->
@@ -1099,6 +1177,21 @@ document.querySelectorAll('.btn-primary').forEach(btn => {
       if (card) card.classList.toggle('flipped');
     });
   });
+})();
+
+/* ═══════════════════════════════════════════════
+   RX BANNER SCROLL ANIMATION
+═══════════════════════════════════════════════ */
+(function() {
+  const banner = document.getElementById('rxBanner');
+  if (!banner) return;
+  const obs = new IntersectionObserver(entries => {
+    if (entries[0].isIntersecting) {
+      banner.classList.add('rx-visible');
+      obs.unobserve(banner);
+    }
+  }, { threshold: 0.2 });
+  obs.observe(banner);
 })();
 
 /* ═══════════════════════════════════════════════
