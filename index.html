@@ -291,29 +291,79 @@
     .tab-btn:hover, .tab-btn.active {
       background: var(--orange); border-color: var(--orange); color: var(--white);
     }
-    .tab-panel { display: none; }
-    .tab-panel.active { display: block; }
 
-    /* horizontal carousel */
-    .carousel-wrap {
-      position: relative; max-width: 1200px; margin: 0 auto;
+    /* ── OUTER CATEGORY SLIDER ── */
+    .categories-viewport {
+      overflow: hidden;
+      max-width: 1100px;
+      margin: 0 auto;
     }
-    .carousel-track-outer {
-      overflow: hidden; position: relative;
-    }
-    .menu-grid {
-      display: flex; gap: 1.25rem;
-      padding: 1rem 0.25rem 1.5rem;
-      width: max-content;
-      transition: none;
+    .categories-track {
+      display: flex;
+      flex-wrap: nowrap;
+      transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
       will-change: transform;
     }
+    .category-panel {
+      /* each panel = exactly 100% of the viewport */
+      flex: 0 0 100%;
+      width: 100%;
+      min-width: 0;
+      position: relative;
+    }
+
+    /* ── INNER CARD CAROUSEL ── */
+    .inner-carousel {
+      position: relative;
+      padding: 0 52px; /* room for arrows */
+    }
+    .inner-viewport {
+      overflow: hidden;
+    }
+    @media (max-width: 768px) {
+      .inner-carousel { padding: 0; }
+      .inner-viewport { overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+      .inner-viewport::-webkit-scrollbar { display: none; }
+    }
+    .inner-track {
+      display: flex;
+      gap: 1.25rem;
+      padding: 1rem 0 1.5rem;
+      transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      will-change: transform;
+    }
+    @media (max-width: 768px) {
+      .inner-track {
+        transition: none;
+        padding: 1rem 1rem 1.5rem;
+      }
+    }
+
+    /* inner arrow buttons */
+    .inner-arrow {
+      position: absolute; top: 50%; z-index: 10;
+      width: 44px; height: 44px; border-radius: 50%;
+      background: var(--orange); border: none; color: var(--white);
+      font-size: 1.3rem; line-height: 1;
+      display: flex; align-items: center; justify-content: center;
+      transform: translateY(-50%);
+      transition: background .2s, opacity .2s;
+      opacity: 0.9;
+    }
+    .inner-arrow:hover:not(:disabled) { background: var(--orange-dark); }
+    .inner-arrow:disabled { opacity: 0.25; pointer-events: none; }
+    .inner-arrow.prev { left: 0; }
+    .inner-arrow.next { right: 0; }
+    @media (max-width: 768px) { .inner-arrow { display: none; } }
 
     /* card flip */
     .menu-card {
       width: 280px; flex-shrink: 0;
       perspective: 1000px;
       cursor: default;
+    }
+    @media (max-width: 768px) {
+      .menu-card { scroll-snap-align: start; }
     }
     .card-inner {
       position: relative; width: 100%; height: 100%;
@@ -322,7 +372,6 @@
       border-radius: 8px;
       min-height: 280px;
     }
-    .menu-card.flipped .card-inner,
     @media (hover: hover) {
       .menu-card:hover .card-inner { transform: rotateY(180deg); }
     }
@@ -364,28 +413,6 @@
     .menu-info p { font-size: 0.8rem; color: var(--gray); margin-bottom: 0.75rem; }
     .menu-price { font-size: 1.1rem; font-weight: 900; color: var(--orange); }
     .coming-soon-card .card-front { opacity: 0.6; }
-
-    /* carousel arrows */
-    .carousel-arrow {
-      position: absolute; top: 50%; z-index: 10;
-      width: 44px; height: 44px; border-radius: 50%;
-      background: var(--orange); border: none; color: var(--white);
-      font-size: 1.2rem; display: flex; align-items: center; justify-content: center;
-      opacity: 0; pointer-events: none;
-      transition: opacity .3s, transform .3s var(--ease);
-      transform: translateY(-50%) scale(0.8);
-    }
-    .carousel-wrap:hover .carousel-arrow { opacity: 1; pointer-events: auto; transform: translateY(-50%) scale(1); }
-    .carousel-arrow:hover { background: var(--orange-dark); }
-    .carousel-arrow.left  { left: -22px; }
-    .carousel-arrow.right { right: -22px; }
-
-    /* card entrance anim */
-    @keyframes cardSlideIn {
-      from { opacity: 0; transform: translateX(40px); }
-      to   { opacity: 1; transform: translateX(0); }
-    }
-    .menu-card.card-visible { animation: cardSlideIn .35s var(--ease) both; }
 
     /* ── FLEISCH ── */
     #fleisch { padding: 6rem 2rem; background: var(--dark); }
@@ -499,7 +526,6 @@
       .location-grid { grid-template-columns: 1fr; }
       .hero-title { letter-spacing: -1px; }
       .menu-card { width: 240px; }
-      .carousel-arrow { display: none; }
     }
   </style>
 </head>
@@ -609,152 +635,162 @@
   <div class="section-header">
     <span class="section-label reveal">Unsere Karte</span>
     <h2 class="section-title reveal">Die Speisekarte</h2>
-    <div class="halal-badge reveal">✅ Alle Produkte aus Halal Angus Rindfleisch</div>
+    <div class="halal-badge reveal">&#x2705; Alle Produkte aus Halal Angus Rindfleisch</div>
   </div>
 
   <div class="tabs reveal">
-    <button class="tab-btn active" onclick="switchTab('burger',this)">🍔 Burger</button>
-    <button class="tab-btn" onclick="switchTab('grill',this)">🥙 Vom Grill</button>
-    <button class="tab-btn" onclick="switchTab('fingerfood',this)">🌶️ Fingerfood</button>
-    <button class="tab-btn" onclick="switchTab('hotdog',this)">🌭 Hot Dogs</button>
-    <button class="tab-btn" onclick="switchTab('vegan',this)">🥗 Vegetarisch</button>
-    <button class="tab-btn" onclick="switchTab('dessert',this)">🍦 Dessert</button>
-    <button class="tab-btn" onclick="switchTab('getraenke',this)">🥤 Getränke</button>
+    <button class="tab-btn active" onclick="switchTab(0,this)">&#x1F354; Burger</button>
+    <button class="tab-btn" onclick="switchTab(1,this)">&#x1F959; Vom Grill</button>
+    <button class="tab-btn" onclick="switchTab(2,this)">&#x1F336;&#xFE0F; Fingerfood</button>
+    <button class="tab-btn" onclick="switchTab(3,this)">&#x1F32D; Hot Dogs</button>
+    <button class="tab-btn" onclick="switchTab(4,this)">&#x1F957; Vegetarisch</button>
+    <button class="tab-btn" onclick="switchTab(5,this)">&#x1F366; Dessert</button>
+    <button class="tab-btn" onclick="switchTab(6,this)">&#x1F964; Getr&#228;nke</button>
   </div>
 
-  <!-- BURGER -->
-  <div class="tab-panel active" id="tab-burger">
-    <div class="carousel-wrap">
-      <button class="carousel-arrow left" onclick="slideCarousel(this,-1)">&#8592;</button>
-      <button class="carousel-arrow right" onclick="slideCarousel(this,1)">&#8594;</button>
-      <div class="carousel-track-outer">
-        <div class="menu-grid">
-          <div class="menu-card"><div class="card-inner">
-            <div class="card-front"><div class="menu-img">🍔</div><div class="menu-info"><h3>Angus Hamburger</h3><p>Klassisch & saftig</p><div class="menu-price">€ 10,20</div></div></div>
-            <div class="card-back"><h3>Angus Hamburger</h3><p>Saftiges Halal Angus Beef Patty, frisches Salatbett, reife Tomate, Zwiebeln & hausgemachte Sauce im Brioche Bun.</p><div class="back-price">€ 10,20</div><span class="back-tap">↩ zurückklicken</span></div>
-          </div></div>
-          <div class="menu-card"><div class="card-inner">
-            <div class="card-front"><div class="menu-img">🍔</div><div class="menu-info"><h3>Angus Cheeseburger</h3><p>Mit Cheddar überbacken</p><div class="menu-price">€ 11,60</div></div></div>
-            <div class="card-back"><h3>Angus Cheeseburger</h3><p>Halal Angus Patty mit geschmolzenem Cheddar, Salat, Tomate, Zwiebeln & Special Sauce.</p><div class="back-price">€ 11,60</div><span class="back-tap">↩ zurückklicken</span></div>
-          </div></div>
-          <div class="menu-card"><div class="card-inner">
-            <div class="card-front"><div class="menu-img">🍔</div><div class="menu-info"><h3>Double Angus Cheeseburger</h3><p>Doppelt hält besser</p><div class="menu-price">€ 15,40</div></div></div>
-            <div class="card-back"><h3>Double Angus Cheeseburger</h3><p>Zwei Halal Angus Patties, doppelt Cheddar, Salat, Tomate & Spezial-Sauce. Für den großen Hunger.</p><div class="back-price">€ 15,40</div><span class="back-tap">↩ zurückklicken</span></div>
-          </div></div>
-          <div class="menu-card"><div class="card-inner">
-            <div class="card-front"><div class="menu-img">🍔</div><div class="menu-info"><h3>Angus Cheeseburger mit Rinderspeck</h3><p>Käse + knuspriger Rinderspeck</p><div class="menu-price">€ 15,30</div></div></div>
-            <div class="card-back"><h3>Angus Cheeseburger + Rinderspeck</h3><p>Halal Angus Patty, Cheddar, knuspriger Halal Rinderspeck, Salat, Tomate & Sauce.</p><div class="back-price">€ 15,30</div><span class="back-tap">↩ zurückklicken</span></div>
-          </div></div>
-          <div class="menu-card"><div class="card-inner">
-            <div class="card-front"><div class="menu-img">🍔</div><div class="menu-info"><h3>Double Cheeseburger mit Rinderspeck</h3><p>Die volle Dosis</p><div class="menu-price">€ 19,10</div></div></div>
-            <div class="card-back"><h3>Double Cheeseburger + Rinderspeck</h3><p>Doppeltes Angus Patty, doppelt Käse, Rinderspeck – volle Power, voller Geschmack.</p><div class="back-price">€ 19,10</div><span class="back-tap">↩ zurückklicken</span></div>
-          </div></div>
-          <div class="menu-card"><div class="card-inner">
-            <div class="card-front"><div class="menu-img">🍔</div><div class="menu-info"><h3>Kommando Burger</h3><p>Für echte Helden</p><div class="menu-price">€ 11,60</div></div></div>
-            <div class="card-back"><h3>Kommando Burger</h3><p>Unser mutigster Burger – scharfe Jalapeños, Angus Patty, Cheddar & geheime Kommando-Sauce.</p><div class="back-price">€ 11,60</div><span class="back-tap">↩ zurückklicken</span></div>
-          </div></div>
-          <div class="menu-card" style="--card-accent: 1"><div class="card-inner">
-            <div class="card-front" style="border-color: var(--orange)"><div class="menu-img">🍔</div><div class="menu-info"><h3>Mrdr Primarius Burger</h3><p>Chefarzt-Empfehlung 👨‍⚕️</p><div class="menu-price">€ 16,50</div></div></div>
-            <div class="card-back"><h3>Mrdr Primarius Burger</h3><p>Chefarzt-Rezept: doppeltes Angus Patty, Truffle Mayo, karamellisierte Zwiebeln, Rinderspeck & Premium Cheddar.</p><div class="back-price">€ 16,50</div><span class="back-tap">↩ zurückklicken</span></div>
-          </div></div>
-          <div class="menu-card"><div class="card-inner">
-            <div class="card-front"><div class="menu-img">🍗</div><div class="menu-info"><h3>Crispy Chicken Burger</h3><p>Knusprig & saftig</p><div class="menu-price">€ 8,90</div></div></div>
-            <div class="card-back"><h3>Crispy Chicken Burger</h3><p>Knusprig frittiertes Hähnchen, Coleslaw, Pickles & Honig-Senf-Sauce im weichen Bun.</p><div class="back-price">€ 8,90</div><span class="back-tap">↩ zurückklicken</span></div>
-          </div></div>
-          <div class="menu-card"><div class="card-inner">
-            <div class="card-front"><div class="menu-img">🍗</div><div class="menu-info"><h3>Hühner Cordon Bleu Burger</h3><p>Klassiker neu interpretiert</p><div class="menu-price">€ 11,10</div></div></div>
-            <div class="card-back"><h3>Hühner Cordon Bleu Burger</h3><p>Hähnchen Cordon Bleu Style – mit Käse & Schinken gefüllt, paniert & frittiert, auf frischem Salat.</p><div class="back-price">€ 11,10</div><span class="back-tap">↩ zurückklicken</span></div>
-          </div></div>
-          <div class="menu-card"><div class="card-inner">
-            <div class="card-front"><div class="menu-img">🍗</div><div class="menu-info"><h3>Putenschnitzel Burger</h3><p>Leicht & lecker</p><div class="menu-price">€ 11,90</div></div></div>
-            <div class="card-back"><h3>Putenschnitzel Burger</h3><p>Zartes Putenschnitzel, paniert & knusprig, mit Salat, Tomate & Remoulade.</p><div class="back-price">€ 11,90</div><span class="back-tap">↩ zurückklicken</span></div>
-          </div></div>
-          <div class="menu-card"><div class="card-inner">
-            <div class="card-front"><div class="menu-img">🍔</div><div class="menu-info"><h3>Double Angus Hamburger</h3><p>Klassisch im Doppelpack</p><div class="menu-price">€ 14,10</div></div></div>
-            <div class="card-back"><h3>Double Angus Hamburger</h3><p>Zwei klassische Halal Angus Patties, doppelt Salat, Tomate & Zwiebeln.</p><div class="back-price">€ 14,10</div><span class="back-tap">↩ zurückklicken</span></div>
-          </div></div>
-          <div class="menu-card"><div class="card-inner">
-            <div class="card-front"><div class="menu-img">🍔</div><div class="menu-info"><h3>Angus Hamburger mit Rinderspeck</h3><p>Mit knusprigem Rinderspeck</p><div class="menu-price">€ 14,10</div></div></div>
-            <div class="card-back"><h3>Angus Hamburger + Rinderspeck</h3><p>Klassischer Angus Hamburger aufgewertet mit knusprigem Halal Rinderspeck.</p><div class="back-price">€ 14,10</div><span class="back-tap">↩ zurückklicken</span></div>
-          </div></div>
-          <div class="menu-card"><div class="card-inner">
-            <div class="card-front"><div class="menu-img">🍔</div><div class="menu-info"><h3>Double Angus Hamburger mit Rinderspeck</h3><p>Die ultimative Kombination</p><div class="menu-price">€ 17,90</div></div></div>
-            <div class="card-back"><h3>Double Angus + Rinderspeck</h3><p>Doppeltes Angus Patty, doppelt Rinderspeck – die ultimative Kombination für Fleischliebhaber.</p><div class="back-price">€ 17,90</div><span class="back-tap">↩ zurückklicken</span></div>
+  <div class="categories-viewport">
+    <div class="categories-track" id="categoriesTrack">
+
+      <!-- 0: BURGER -->
+      <div class="category-panel">
+        <div class="inner-carousel">
+          <button class="inner-arrow prev" aria-label="zur&#252;ck">&#8249;</button>
+          <button class="inner-arrow next" aria-label="weiter">&#8250;</button>
+          <div class="inner-viewport"><div class="inner-track">
+            <div class="menu-card"><div class="card-inner">
+              <div class="card-front"><div class="menu-img">&#x1F354;</div><div class="menu-info"><h3>Angus Hamburger</h3><p>Klassisch &amp; saftig</p><div class="menu-price">&#x20AC; 10,20</div></div></div>
+              <div class="card-back"><h3>Angus Hamburger</h3><p>Saftiges Halal Angus Beef Patty, frisches Salatbett, reife Tomate, Zwiebeln &amp; hausgemachte Sauce im Brioche Bun.</p><div class="back-price">&#x20AC; 10,20</div><span class="back-tap">&#x21A9; zur&#252;ckklicken</span></div>
+            </div></div>
+            <div class="menu-card"><div class="card-inner">
+              <div class="card-front"><div class="menu-img">&#x1F354;</div><div class="menu-info"><h3>Angus Cheeseburger</h3><p>Mit Cheddar &#252;berbacken</p><div class="menu-price">&#x20AC; 11,60</div></div></div>
+              <div class="card-back"><h3>Angus Cheeseburger</h3><p>Halal Angus Patty mit geschmolzenem Cheddar, Salat, Tomate, Zwiebeln &amp; Special Sauce.</p><div class="back-price">&#x20AC; 11,60</div><span class="back-tap">&#x21A9; zur&#252;ckklicken</span></div>
+            </div></div>
+            <div class="menu-card"><div class="card-inner">
+              <div class="card-front"><div class="menu-img">&#x1F354;</div><div class="menu-info"><h3>Double Angus Cheeseburger</h3><p>Doppelt h&#228;lt besser</p><div class="menu-price">&#x20AC; 15,40</div></div></div>
+              <div class="card-back"><h3>Double Angus Cheeseburger</h3><p>Zwei Halal Angus Patties, doppelt Cheddar, Salat, Tomate &amp; Spezial-Sauce.</p><div class="back-price">&#x20AC; 15,40</div><span class="back-tap">&#x21A9; zur&#252;ckklicken</span></div>
+            </div></div>
+            <div class="menu-card"><div class="card-inner">
+              <div class="card-front"><div class="menu-img">&#x1F354;</div><div class="menu-info"><h3>Angus Cheeseburger mit Rinderspeck</h3><p>K&#228;se + knuspriger Rinderspeck</p><div class="menu-price">&#x20AC; 15,30</div></div></div>
+              <div class="card-back"><h3>Angus Cheeseburger + Rinderspeck</h3><p>Halal Angus Patty, Cheddar, knuspriger Halal Rinderspeck, Salat, Tomate &amp; Sauce.</p><div class="back-price">&#x20AC; 15,30</div><span class="back-tap">&#x21A9; zur&#252;ckklicken</span></div>
+            </div></div>
+            <div class="menu-card"><div class="card-inner">
+              <div class="card-front"><div class="menu-img">&#x1F354;</div><div class="menu-info"><h3>Double Cheeseburger mit Rinderspeck</h3><p>Die volle Dosis</p><div class="menu-price">&#x20AC; 19,10</div></div></div>
+              <div class="card-back"><h3>Double Cheeseburger + Rinderspeck</h3><p>Doppeltes Angus Patty, doppelt K&#228;se, Rinderspeck &#x2013; volle Power, voller Geschmack.</p><div class="back-price">&#x20AC; 19,10</div><span class="back-tap">&#x21A9; zur&#252;ckklicken</span></div>
+            </div></div>
+            <div class="menu-card"><div class="card-inner">
+              <div class="card-front"><div class="menu-img">&#x1F354;</div><div class="menu-info"><h3>Kommando Burger</h3><p>F&#252;r echte Helden</p><div class="menu-price">&#x20AC; 11,60</div></div></div>
+              <div class="card-back"><h3>Kommando Burger</h3><p>Unser mutigster Burger &#x2013; scharfe Jalape&#241;os, Angus Patty, Cheddar &amp; geheime Kommando-Sauce.</p><div class="back-price">&#x20AC; 11,60</div><span class="back-tap">&#x21A9; zur&#252;ckklicken</span></div>
+            </div></div>
+            <div class="menu-card"><div class="card-inner">
+              <div class="card-front" style="border-color:var(--orange)"><div class="menu-img">&#x1F354;</div><div class="menu-info"><h3>Mrdr Primarius Burger</h3><p>Chefarzt-Empfehlung &#x1F468;&#x200D;&#x2695;&#xFE0F;</p><div class="menu-price">&#x20AC; 16,50</div></div></div>
+              <div class="card-back"><h3>Mrdr Primarius Burger</h3><p>Chefarzt-Rezept: doppeltes Angus Patty, Truffle Mayo, karamellisierte Zwiebeln, Rinderspeck &amp; Premium Cheddar.</p><div class="back-price">&#x20AC; 16,50</div><span class="back-tap">&#x21A9; zur&#252;ckklicken</span></div>
+            </div></div>
+            <div class="menu-card"><div class="card-inner">
+              <div class="card-front"><div class="menu-img">&#x1F357;</div><div class="menu-info"><h3>Crispy Chicken Burger</h3><p>Knusprig &amp; saftig</p><div class="menu-price">&#x20AC; 8,90</div></div></div>
+              <div class="card-back"><h3>Crispy Chicken Burger</h3><p>Knusprig frittiertes H&#228;hnchen, Coleslaw, Pickles &amp; Honig-Senf-Sauce im weichen Bun.</p><div class="back-price">&#x20AC; 8,90</div><span class="back-tap">&#x21A9; zur&#252;ckklicken</span></div>
+            </div></div>
+            <div class="menu-card"><div class="card-inner">
+              <div class="card-front"><div class="menu-img">&#x1F357;</div><div class="menu-info"><h3>H&#252;hner Cordon Bleu Burger</h3><p>Klassiker neu interpretiert</p><div class="menu-price">&#x20AC; 11,10</div></div></div>
+              <div class="card-back"><h3>H&#252;hner Cordon Bleu Burger</h3><p>H&#228;hnchen Cordon Bleu Style &#x2013; mit K&#228;se &amp; Schinken gef&#252;llt, paniert &amp; frittiert, auf frischem Salat.</p><div class="back-price">&#x20AC; 11,10</div><span class="back-tap">&#x21A9; zur&#252;ckklicken</span></div>
+            </div></div>
+            <div class="menu-card"><div class="card-inner">
+              <div class="card-front"><div class="menu-img">&#x1F357;</div><div class="menu-info"><h3>Putenschnitzel Burger</h3><p>Leicht &amp; lecker</p><div class="menu-price">&#x20AC; 11,90</div></div></div>
+              <div class="card-back"><h3>Putenschnitzel Burger</h3><p>Zartes Putenschnitzel, paniert &amp; knusprig, mit Salat, Tomate &amp; Remoulade.</p><div class="back-price">&#x20AC; 11,90</div><span class="back-tap">&#x21A9; zur&#252;ckklicken</span></div>
+            </div></div>
+            <div class="menu-card"><div class="card-inner">
+              <div class="card-front"><div class="menu-img">&#x1F354;</div><div class="menu-info"><h3>Double Angus Hamburger</h3><p>Klassisch im Doppelpack</p><div class="menu-price">&#x20AC; 14,10</div></div></div>
+              <div class="card-back"><h3>Double Angus Hamburger</h3><p>Zwei klassische Halal Angus Patties, doppelt Salat, Tomate &amp; Zwiebeln.</p><div class="back-price">&#x20AC; 14,10</div><span class="back-tap">&#x21A9; zur&#252;ckklicken</span></div>
+            </div></div>
+            <div class="menu-card"><div class="card-inner">
+              <div class="card-front"><div class="menu-img">&#x1F354;</div><div class="menu-info"><h3>Angus Hamburger mit Rinderspeck</h3><p>Mit knusprigem Rinderspeck</p><div class="menu-price">&#x20AC; 14,10</div></div></div>
+              <div class="card-back"><h3>Angus Hamburger + Rinderspeck</h3><p>Klassischer Angus Hamburger aufgewertet mit knusprigem Halal Rinderspeck.</p><div class="back-price">&#x20AC; 14,10</div><span class="back-tap">&#x21A9; zur&#252;ckklicken</span></div>
+            </div></div>
+            <div class="menu-card"><div class="card-inner">
+              <div class="card-front"><div class="menu-img">&#x1F354;</div><div class="menu-info"><h3>Double Angus Hamburger mit Rinderspeck</h3><p>Die ultimative Kombination</p><div class="menu-price">&#x20AC; 17,90</div></div></div>
+              <div class="card-back"><h3>Double Angus + Rinderspeck</h3><p>Doppeltes Angus Patty, doppelt Rinderspeck &#x2013; die ultimative Kombination.</p><div class="back-price">&#x20AC; 17,90</div><span class="back-tap">&#x21A9; zur&#252;ckklicken</span></div>
+            </div></div>
           </div></div>
         </div>
       </div>
-    </div>
-  </div>
 
-  <!-- VOM GRILL -->
-  <div class="tab-panel" id="tab-grill">
-    <div class="carousel-wrap">
-      <button class="carousel-arrow left" onclick="slideCarousel(this,-1)">&#8592;</button>
-      <button class="carousel-arrow right" onclick="slideCarousel(this,1)">&#8594;</button>
-      <div class="carousel-track-outer">
-        <div class="menu-grid">
-          <div class="menu-card"><div class="card-inner">
-            <div class="card-front"><div class="menu-img">🥙</div><div class="menu-info"><h3>Pljeskavica im Fladenbrot</h3><p>Balkan-Klassiker vom Grill</p><div class="menu-price">€ 12,90</div></div></div>
-            <div class="card-back"><h3>Pljeskavica im Fladenbrot</h3><p>Traditionelle serbische Grillfrikadelle aus Halal Rinderhack, im frischen Fladenbrot mit Ajvar & Zwiebeln.</p><div class="back-price">€ 12,90</div><span class="back-tap">↩ zurückklicken</span></div>
-          </div></div>
-          <div class="menu-card"><div class="card-inner">
-            <div class="card-front"><div class="menu-img">🥩</div><div class="menu-info"><h3>Ćevapčići 5 Stück</h3><p>Frisch gegrillt, nach Hausrezept</p><div class="menu-price">€ 11,10</div></div></div>
-            <div class="card-back"><h3>Ćevapčići 5 Stück</h3><p>Fünf handgemachte Halal Rindfleisch-Ćevapčići, direkt vom Grill – mit Ajvar, Zwiebeln & Fladenbrot.</p><div class="back-price">€ 11,10</div><span class="back-tap">↩ zurückklicken</span></div>
-          </div></div>
-          <div class="menu-card"><div class="card-inner">
-            <div class="card-front"><div class="menu-img">🥩</div><div class="menu-info"><h3>Ćevapčići 7 Stück</h3><p>Für den etwas größeren Hunger</p><div class="menu-price">€ 13,30</div></div></div>
-            <div class="card-back"><h3>Ćevapčići 7 Stück</h3><p>Sieben handgemachte Ćevapčići vom Grill – mehr Genuss, mehr Balkan Soul.</p><div class="back-price">€ 13,30</div><span class="back-tap">↩ zurückklicken</span></div>
-          </div></div>
-          <div class="menu-card" style="--card-accent:1"><div class="card-inner">
-            <div class="card-front" style="border-color:var(--orange)"><div class="menu-img">🥩</div><div class="menu-info"><h3>Ćevapčići 10 Stück</h3><p>Für die volle Behandlung 🩺</p><div class="menu-price">€ 16,80</div></div></div>
-            <div class="card-back"><h3>Ćevapčići 10 Stück</h3><p>Die volle Dosis Balkan-Grill – zehn Ćevapčići mit Beilagen. Ärztlich empfohlen bei schwerem Hunger.</p><div class="back-price">€ 16,80</div><span class="back-tap">↩ zurückklicken</span></div>
+      <!-- 1: VOM GRILL -->
+      <div class="category-panel">
+        <div class="inner-carousel">
+          <button class="inner-arrow prev" aria-label="zur&#252;ck">&#8249;</button>
+          <button class="inner-arrow next" aria-label="weiter">&#8250;</button>
+          <div class="inner-viewport"><div class="inner-track">
+            <div class="menu-card"><div class="card-inner">
+              <div class="card-front"><div class="menu-img">&#x1F959;</div><div class="menu-info"><h3>Pljeskavica im Fladenbrot</h3><p>Balkan-Klassiker vom Grill</p><div class="menu-price">&#x20AC; 12,90</div></div></div>
+              <div class="card-back"><h3>Pljeskavica im Fladenbrot</h3><p>Traditionelle Grillfrikadelle aus Halal Rinderhack, im frischen Fladenbrot mit Ajvar &amp; Zwiebeln.</p><div class="back-price">&#x20AC; 12,90</div><span class="back-tap">&#x21A9; zur&#252;ckklicken</span></div>
+            </div></div>
+            <div class="menu-card"><div class="card-inner">
+              <div class="card-front"><div class="menu-img">&#x1F969;</div><div class="menu-info"><h3>&#262;evap&#269;i&#263;i 5 St&#252;ck</h3><p>Frisch gegrillt, nach Hausrezept</p><div class="menu-price">&#x20AC; 11,10</div></div></div>
+              <div class="card-back"><h3>&#262;evap&#269;i&#263;i 5 St&#252;ck</h3><p>F&#252;nf handgemachte Halal &#262;evap&#269;i&#263;i, direkt vom Grill &#x2013; mit Ajvar, Zwiebeln &amp; Fladenbrot.</p><div class="back-price">&#x20AC; 11,10</div><span class="back-tap">&#x21A9; zur&#252;ckklicken</span></div>
+            </div></div>
+            <div class="menu-card"><div class="card-inner">
+              <div class="card-front"><div class="menu-img">&#x1F969;</div><div class="menu-info"><h3>&#262;evap&#269;i&#263;i 7 St&#252;ck</h3><p>F&#252;r den etwas gr&#246;&#223;eren Hunger</p><div class="menu-price">&#x20AC; 13,30</div></div></div>
+              <div class="card-back"><h3>&#262;evap&#269;i&#263;i 7 St&#252;ck</h3><p>Sieben handgemachte &#262;evap&#269;i&#263;i vom Grill &#x2013; mehr Genuss, mehr Balkan Soul.</p><div class="back-price">&#x20AC; 13,30</div><span class="back-tap">&#x21A9; zur&#252;ckklicken</span></div>
+            </div></div>
+            <div class="menu-card"><div class="card-inner">
+              <div class="card-front" style="border-color:var(--orange)"><div class="menu-img">&#x1F969;</div><div class="menu-info"><h3>&#262;evap&#269;i&#263;i 10 St&#252;ck</h3><p>F&#252;r die volle Behandlung &#x1FA7A;</p><div class="menu-price">&#x20AC; 16,80</div></div></div>
+              <div class="card-back"><h3>&#262;evap&#269;i&#263;i 10 St&#252;ck</h3><p>Die volle Dosis Balkan-Grill &#x2013; zehn &#262;evap&#269;i&#263;i mit Beilagen. &#196;rztlich empfohlen.</p><div class="back-price">&#x20AC; 16,80</div><span class="back-tap">&#x21A9; zur&#252;ckklicken</span></div>
+            </div></div>
           </div></div>
         </div>
       </div>
-    </div>
-  </div>
 
-  <!-- COMING SOON TABS -->
-  <div class="tab-panel" id="tab-fingerfood">
-    <div class="carousel-wrap"><div class="carousel-track-outer"><div class="menu-grid">
-      <div class="menu-card coming-soon-card"><div class="card-inner">
-        <div class="card-front"><div class="menu-img">🌶️</div><div class="menu-info"><h3>Fingerfood & Saucen</h3><p>Fotos folgen – bald verfügbar</p><div class="menu-price" style="color:var(--gray)">demnächst</div></div></div>
-        <div class="card-back" style="background:var(--border)"><h3>Bald verfügbar</h3><p>Unsere Fingerfood-Karte wird gerade zusammengestellt.</p></div>
-      </div></div>
-    </div></div></div>
-  </div>
-  <div class="tab-panel" id="tab-hotdog">
-    <div class="carousel-wrap"><div class="carousel-track-outer"><div class="menu-grid">
-      <div class="menu-card coming-soon-card"><div class="card-inner">
-        <div class="card-front"><div class="menu-img">🌭</div><div class="menu-info"><h3>Hot Dogs</h3><p>Fotos folgen – bald verfügbar</p><div class="menu-price" style="color:var(--gray)">demnächst</div></div></div>
-        <div class="card-back" style="background:var(--border)"><h3>Bald verfügbar</h3><p>Hot Dog Karte kommt bald.</p></div>
-      </div></div>
-    </div></div></div>
-  </div>
-  <div class="tab-panel" id="tab-vegan">
-    <div class="carousel-wrap"><div class="carousel-track-outer"><div class="menu-grid">
-      <div class="menu-card coming-soon-card"><div class="card-inner">
-        <div class="card-front"><div class="menu-img">🥗</div><div class="menu-info"><h3>Vegetarisch / Vegan</h3><p>Fotos folgen – bald verfügbar</p><div class="menu-price" style="color:var(--gray)">demnächst</div></div></div>
-        <div class="card-back" style="background:var(--border)"><h3>Bald verfügbar</h3><p>Vegane & vegetarische Optionen folgen.</p></div>
-      </div></div>
-    </div></div></div>
-  </div>
-  <div class="tab-panel" id="tab-dessert">
-    <div class="carousel-wrap"><div class="carousel-track-outer"><div class="menu-grid">
-      <div class="menu-card coming-soon-card"><div class="card-inner">
-        <div class="card-front"><div class="menu-img">🍦</div><div class="menu-info"><h3>Dessert</h3><p>Fotos folgen – bald verfügbar</p><div class="menu-price" style="color:var(--gray)">demnächst</div></div></div>
-        <div class="card-back" style="background:var(--border)"><h3>Bald verfügbar</h3><p>Süße Nachspeisen kommen bald.</p></div>
-      </div></div>
-    </div></div></div>
-  </div>
-  <div class="tab-panel" id="tab-getraenke">
-    <div class="carousel-wrap"><div class="carousel-track-outer"><div class="menu-grid">
-      <div class="menu-card coming-soon-card"><div class="card-inner">
-        <div class="card-front"><div class="menu-img">🥤</div><div class="menu-info"><h3>Getränke</h3><p>Fotos folgen – bald verfügbar</p><div class="menu-price" style="color:var(--gray)">demnächst</div></div></div>
-        <div class="card-back" style="background:var(--border)"><h3>Bald verfügbar</h3><p>Getränkekarte folgt in Kürze.</p></div>
-      </div></div>
-    </div></div></div>
-  </div>
+      <!-- 2: FINGERFOOD -->
+      <div class="category-panel">
+        <div class="inner-carousel"><div class="inner-viewport"><div class="inner-track">
+          <div class="menu-card coming-soon-card"><div class="card-inner">
+            <div class="card-front"><div class="menu-img">&#x1F336;&#xFE0F;</div><div class="menu-info"><h3>Fingerfood &amp; Saucen</h3><p>Fotos folgen &#x2013; bald verf&#252;gbar</p><div class="menu-price" style="color:var(--gray)">demn&#228;chst</div></div></div>
+            <div class="card-back" style="background:var(--border)"><h3>Bald verf&#252;gbar</h3><p>Unsere Fingerfood-Karte wird gerade zusammengestellt.</p></div>
+          </div></div>
+        </div></div></div>
+      </div>
+
+      <!-- 3: HOT DOGS -->
+      <div class="category-panel">
+        <div class="inner-carousel"><div class="inner-viewport"><div class="inner-track">
+          <div class="menu-card coming-soon-card"><div class="card-inner">
+            <div class="card-front"><div class="menu-img">&#x1F32D;</div><div class="menu-info"><h3>Hot Dogs</h3><p>Fotos folgen &#x2013; bald verf&#252;gbar</p><div class="menu-price" style="color:var(--gray)">demn&#228;chst</div></div></div>
+            <div class="card-back" style="background:var(--border)"><h3>Bald verf&#252;gbar</h3><p>Hot Dog Karte kommt bald.</p></div>
+          </div></div>
+        </div></div></div>
+      </div>
+
+      <!-- 4: VEGAN -->
+      <div class="category-panel">
+        <div class="inner-carousel"><div class="inner-viewport"><div class="inner-track">
+          <div class="menu-card coming-soon-card"><div class="card-inner">
+            <div class="card-front"><div class="menu-img">&#x1F957;</div><div class="menu-info"><h3>Vegetarisch / Vegan</h3><p>Fotos folgen &#x2013; bald verf&#252;gbar</p><div class="menu-price" style="color:var(--gray)">demn&#228;chst</div></div></div>
+            <div class="card-back" style="background:var(--border)"><h3>Bald verf&#252;gbar</h3><p>Vegane &amp; vegetarische Optionen folgen.</p></div>
+          </div></div>
+        </div></div></div>
+      </div>
+
+      <!-- 5: DESSERT -->
+      <div class="category-panel">
+        <div class="inner-carousel"><div class="inner-viewport"><div class="inner-track">
+          <div class="menu-card coming-soon-card"><div class="card-inner">
+            <div class="card-front"><div class="menu-img">&#x1F366;</div><div class="menu-info"><h3>Dessert</h3><p>Fotos folgen &#x2013; bald verf&#252;gbar</p><div class="menu-price" style="color:var(--gray)">demn&#228;chst</div></div></div>
+            <div class="card-back" style="background:var(--border)"><h3>Bald verf&#252;gbar</h3><p>S&#252;&#223;e Nachspeisen kommen bald.</p></div>
+          </div></div>
+        </div></div></div>
+      </div>
+
+      <!-- 6: GETRAENKE -->
+      <div class="category-panel">
+        <div class="inner-carousel"><div class="inner-viewport"><div class="inner-track">
+          <div class="menu-card coming-soon-card"><div class="card-inner">
+            <div class="card-front"><div class="menu-img">&#x1F964;</div><div class="menu-info"><h3>Getr&#228;nke</h3><p>Fotos folgen &#x2013; bald verf&#252;gbar</p><div class="menu-price" style="color:var(--gray)">demn&#228;chst</div></div></div>
+            <div class="card-back" style="background:var(--border)"><h3>Bald verf&#252;gbar</h3><p>Getr&#228;nkekarte folgt in K&#252;rze.</p></div>
+          </div></div>
+        </div></div></div>
+      </div>
+
+    </div><!-- /categories-track -->
+  </div><!-- /categories-viewport -->
 </section>
 
 <!-- FLEISCH AUS DER KÜHLTRUHE -->
@@ -989,107 +1025,81 @@ document.querySelectorAll('.btn-primary').forEach(btn => {
 });
 
 /* ═══════════════════════════════════════════════
-   3. HORIZONTAL CAROUSEL (drag + inertia)
+   CATEGORY SLIDER + INNER CARD CAROUSEL
 ═══════════════════════════════════════════════ */
-function initCarousel(track) {
-  let isDown = false, startX = 0, scrollLeft = 0;
-  let velX = 0, lastX = 0, rafId = null;
+(function() {
+  const SLIDE_EASE = 'cubic-bezier(0.25,0.46,0.45,0.94)';
+  const CARD_W = 280;
+  const GAP    = 20; // matches 1.25rem gap
 
-  track.addEventListener('mousedown', e => {
-    isDown = true; track.style.cursor = 'grabbing';
-    startX = e.pageX - track.offsetLeft;
-    scrollLeft = track._scroll || 0;
-    lastX = e.pageX;
-    cancelAnimationFrame(rafId);
-    velX = 0;
-  });
-  document.addEventListener('mouseup', () => {
-    if (!isDown) return;
-    isDown = false; track.style.cursor = '';
-    inertia();
-  });
-  document.addEventListener('mousemove', e => {
-    if (!isDown) return;
-    e.preventDefault();
-    const x = e.pageX - track.offsetLeft;
-    const walk = (x - startX);
-    velX = e.pageX - lastX;
-    lastX = e.pageX;
-    applyScroll(track, scrollLeft - walk);
-  });
+  // ── Outer category track ──────────────────────────────────────────────────
+  const catTrack = document.getElementById('categoriesTrack');
+  let currentCat = 0;
 
-  // Touch
-  track.addEventListener('touchstart', e => {
-    startX = e.touches[0].pageX;
-    scrollLeft = track._scroll || 0;
-    lastX = startX; velX = 0;
-    cancelAnimationFrame(rafId);
-  }, { passive: true });
-  track.addEventListener('touchmove', e => {
-    const dx = startX - e.touches[0].pageX;
-    velX = -(e.touches[0].pageX - lastX);
-    lastX = e.touches[0].pageX;
-    applyScroll(track, scrollLeft + dx);
-  }, { passive: true });
-  track.addEventListener('touchend', () => { inertia(); });
-
-  function inertia() {
-    if (Math.abs(velX) < 0.5) return;
-    velX *= 0.92;
-    applyScroll(track, (track._scroll || 0) + velX);
-    rafId = requestAnimationFrame(inertia);
+  function slideToCat(index) {
+    currentCat = index;
+    catTrack.style.transition = `transform 0.5s ${SLIDE_EASE}`;
+    catTrack.style.transform  = `translateX(${-index * 100}%)`;
+    // reset inner scroll for newly visible panel
+    const panel = catTrack.children[index];
+    const innerTrack = panel.querySelector('.inner-track');
+    if (innerTrack) { innerTrack._pos = 0; innerTrack.style.transition = 'none'; innerTrack.style.transform = 'translateX(0)'; }
+    updateArrows(panel);
   }
-}
 
-function applyScroll(track, val) {
-  const max = track.scrollWidth - track.parentElement.offsetWidth;
-  track._scroll = Math.max(0, Math.min(val, max));
-  track.style.transform = `translateX(${-track._scroll}px)`;
-}
+  window.switchTab = function(index, btn) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    slideToCat(index);
+  };
 
-function slideCarousel(btn, dir) {
-  const track = btn.closest('.carousel-wrap').querySelector('.menu-grid');
-  const step = 300;
-  applyScroll(track, (track._scroll || 0) + dir * step);
-}
+  // ── Inner card carousel (prev/next arrows) ────────────────────────────────
+  function updateArrows(panel) {
+    const track = panel.querySelector('.inner-track');
+    if (!track) return;
+    const viewport = panel.querySelector('.inner-viewport');
+    const prev = panel.querySelector('.inner-arrow.prev');
+    const next = panel.querySelector('.inner-arrow.next');
+    if (!prev || !next) return;
+    const pos     = track._pos || 0;
+    const maxPos  = Math.max(0, track.scrollWidth - viewport.offsetWidth);
+    prev.disabled = pos <= 0;
+    next.disabled = pos >= maxPos - 1;
+  }
 
-document.querySelectorAll('.menu-grid').forEach(initCarousel);
+  function moveInner(btn, dir) {
+    const panel   = btn.closest('.category-panel');
+    const track   = panel.querySelector('.inner-track');
+    const viewport= panel.querySelector('.inner-viewport');
+    const step    = CARD_W + GAP;
+    const maxPos  = Math.max(0, track.scrollWidth - viewport.offsetWidth);
+    const newPos  = Math.max(0, Math.min((track._pos || 0) + dir * step, maxPos));
+    track._pos = newPos;
+    track.style.transition = `transform 0.5s ${SLIDE_EASE}`;
+    track.style.transform  = `translateX(${-newPos}px)`;
+    updateArrows(panel);
+  }
 
-/* ═══════════════════════════════════════════════
-   3+4. TAB SWITCH (re-init flip & carousel)
-═══════════════════════════════════════════════ */
-function switchTab(id, btn) {
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  const panel = document.getElementById('tab-' + id);
-  panel.classList.add('active');
-  btn.classList.add('active');
-  // animate cards in
-  panel.querySelectorAll('.menu-card').forEach((c, i) => {
-    c.classList.remove('card-visible');
-    setTimeout(() => c.classList.add('card-visible'), i * 60);
+  // Wire up arrow buttons
+  document.querySelectorAll('.inner-arrow').forEach(btn => {
+    const dir = btn.classList.contains('prev') ? -1 : 1;
+    btn.addEventListener('click', () => moveInner(btn, dir));
   });
-}
 
-// Initial animation for visible tab
-document.querySelectorAll('#tab-burger .menu-card').forEach((c, i) => {
-  setTimeout(() => c.classList.add('card-visible'), i * 60);
-});
+  // Init arrow states
+  document.querySelectorAll('.category-panel').forEach(updateArrows);
 
-/* ═══════════════════════════════════════════════
-   4. CARD FLIP (touch / click for mobile)
-═══════════════════════════════════════════════ */
-let isTouchDevice = false;
-window.addEventListener('touchstart', () => { isTouchDevice = true; }, { once: true });
-
-document.querySelectorAll('.menu-grid').forEach(grid => {
-  grid.addEventListener('click', e => {
-    if (!isTouchDevice) return;
-    const card = e.target.closest('.menu-card');
-    if (!card) return;
-    card.classList.toggle('flipped');
+  // ── Mobile tap-to-flip ────────────────────────────────────────────────────
+  let isTouchDevice = false;
+  window.addEventListener('touchstart', () => { isTouchDevice = true; }, { once: true });
+  document.querySelectorAll('.inner-track').forEach(track => {
+    track.addEventListener('click', e => {
+      if (!isTouchDevice) return;
+      const card = e.target.closest('.menu-card');
+      if (card) card.classList.toggle('flipped');
+    });
   });
-});
+})();
 
 /* ═══════════════════════════════════════════════
    1. CUSTOM CURSOR
