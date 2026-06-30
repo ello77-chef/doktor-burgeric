@@ -865,35 +865,27 @@ document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
   const COUNT = 120;
   let W, H, particles;
 
-  function resize() {
-    const hero = document.getElementById('hero');
-    W = canvas.width  = hero.offsetWidth;
-    H = canvas.height = hero.offsetHeight;
-  }
-  window.addEventListener('resize', resize, { passive: true });
-  // Wait for layout so hero has its full dimensions
-  if (document.readyState === 'complete') {
-    resize();
-  } else {
-    window.addEventListener('load', resize);
-  }
-
   function rand(a, b) { return a + Math.random() * (b - a); }
-
   function makeParticle() {
     return {
-      x:     rand(0, W),
-      y:     rand(0, H),
-      r:     rand(1, 4),
-      vx:    rand(-0.4, 0.4),
-      vy:    rand(-0.5, -1.2),
+      x: rand(0, W || window.innerWidth),
+      y: rand(0, H || window.innerHeight),
+      r: rand(1, 4),
+      vx: rand(-0.4, 0.4),
+      vy: rand(-0.5, -1.2),
       alpha: rand(0, 1),
       dAlpha: rand(0.003, 0.008) * (Math.random() < 0.5 ? 1 : -1),
       orange: Math.random() < 0.6,
     };
   }
 
-  particles = Array.from({ length: COUNT }, makeParticle);
+  function resize() {
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = document.getElementById('hero').offsetHeight || window.innerHeight;
+    particles = Array.from({ length: COUNT }, makeParticle);
+  }
+  window.addEventListener('resize', resize, { passive: true });
+  resize();
 
   function drawFrame() {
     ctx.clearRect(0, 0, W, H);
