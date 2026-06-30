@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DOKTOR BURGERIC – Burger, Ćevapčići & more | Graz</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --orange: #FF6600;
+      --orange-dark: #cc5200;
+      --black: #0a0a0a;
+      --dark: #111111;
+      --card: #1a1a1a;
+      --border: #2a2a2a;
+      --white: #ffffff;
+      --gray: #888888;
+      --light-gray: #cccccc;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--black);
+      color: var(--white);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(10,10,10,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-logo {
+      font-size: 1.3rem; font-weight: 900; letter-spacing: 2px;
+      color: var(--white);
+    }
+    .nav-logo span { color: var(--orange); }
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a {
+      color: var(--light-gray); text-decoration: none;
+      font-size: 0.9rem; letter-spacing: 1px; text-transform: uppercase;
+      transition: color .2s;
+    }
+    .nav-links a:hover { color: var(--orange); }
+    .nav-order {
+      background: var(--orange); color: var(--white);
+      padding: 0.5rem 1.2rem; border-radius: 4px;
+      text-decoration: none; font-weight: 700; font-size: 0.85rem;
+      letter-spacing: 1px; transition: background .2s;
+    }
+    .nav-order:hover { background: var(--orange-dark); }
+    .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; }
+    .hamburger span { width: 24px; height: 2px; background: var(--white); display: block; transition: .3s; }
+
+    /* ── HERO ── */
+    #hero {
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      text-align: center;
+      padding: 8rem 2rem 4rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-bg {
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse at center, #1a0a00 0%, var(--black) 70%);
+    }
+    .hero-grid {
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 60px 60px;
+      opacity: 0.3;
+    }
+    .hero-content { position: relative; z-index: 1; max-width: 800px; }
+    .hero-badge {
+      display: inline-block;
+      background: rgba(255,102,0,0.15); border: 1px solid var(--orange);
+      color: var(--orange); font-size: 0.75rem; letter-spacing: 3px;
+      text-transform: uppercase; padding: 0.4rem 1rem;
+      border-radius: 2px; margin-bottom: 1.5rem;
+      animation: fadeDown .6s ease both;
+    }
+    .hero-title {
+      font-size: clamp(3rem, 10vw, 7rem);
+      font-weight: 900; line-height: 0.95;
+      letter-spacing: -2px; text-transform: uppercase;
+      animation: fadeUp .7s .1s ease both;
+    }
+    .hero-title .accent { color: var(--orange); display: block; }
+    .hero-tagline {
+      font-size: clamp(1rem, 3vw, 1.4rem);
+      color: var(--gray); margin: 1.5rem 0 2.5rem;
+      letter-spacing: 2px;
+      animation: fadeUp .7s .2s ease both;
+    }
+    .hero-tagline em { color: var(--orange); font-style: normal; }
+    .hero-ctas {
+      display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;
+      animation: fadeUp .7s .3s ease both;
+    }
+    .btn-primary {
+      background: var(--orange); color: var(--white);
+      padding: 1rem 2.5rem; border-radius: 4px;
+      text-decoration: none; font-weight: 700; font-size: 1rem;
+      letter-spacing: 1px; text-transform: uppercase;
+      transition: all .2s; border: 2px solid var(--orange);
+    }
+    .btn-primary:hover { background: var(--orange-dark); border-color: var(--orange-dark); transform: translateY(-2px); }
+    .btn-outline {
+      background: transparent; color: var(--white);
+      padding: 1rem 2.5rem; border-radius: 4px;
+      text-decoration: none; font-weight: 700; font-size: 1rem;
+      letter-spacing: 1px; text-transform: uppercase;
+      transition: all .2s; border: 2px solid var(--border);
+    }
+    .btn-outline:hover { border-color: var(--orange); color: var(--orange); transform: translateY(-2px); }
+    .hero-scroll {
+      position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%);
+      display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+      color: var(--gray); font-size: 0.75rem; letter-spacing: 2px;
+      animation: bounce 2s infinite;
+    }
+    .hero-scroll svg { width: 20px; height: 20px; }
+
+    /* ── ÜBER UNS ── */
+    #ueber-uns {
+      padding: 6rem 2rem;
+      background: var(--dark);
+      text-align: center;
+    }
+    .section-label {
+      font-size: 0.7rem; letter-spacing: 4px; text-transform: uppercase;
+      color: var(--orange); margin-bottom: 1rem; display: block;
+    }
+    .section-title {
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 900; text-transform: uppercase;
+      line-height: 1.1; margin-bottom: 2rem;
+    }
+    .brand-statement {
+      max-width: 640px; margin: 0 auto 3rem;
+      font-size: 1.1rem; color: var(--light-gray); line-height: 1.8;
+    }
+    .brand-statement strong { color: var(--orange); }
+    .pillars {
+      display: flex; gap: 2rem; justify-content: center; flex-wrap: wrap;
+      max-width: 800px; margin: 0 auto;
+    }
+    .pillar {
+      flex: 1; min-width: 180px;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 8px; padding: 2rem 1.5rem;
+      transition: border-color .2s, transform .2s;
+    }
+    .pillar:hover { border-color: var(--orange); transform: translateY(-4px); }
+    .pillar-icon { font-size: 2.5rem; margin-bottom: 1rem; }
+    .pillar h3 { font-size: 1rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 0.5rem; }
+    .pillar p { font-size: 0.85rem; color: var(--gray); }
+
+    /* ── MENU ── */
+    #speisekarte {
+      padding: 6rem 2rem;
+      background: var(--black);
+    }
+    #speisekarte .section-header { text-align: center; margin-bottom: 3rem; }
+    .halal-badge {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      background: rgba(255,102,0,0.1); border: 1px solid var(--orange);
+      color: var(--orange); font-size: 0.8rem; letter-spacing: 1px;
+      padding: 0.4rem 1rem; border-radius: 20px; margin-top: 1rem;
+    }
+    .tabs {
+      display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap;
+      margin-bottom: 2.5rem;
+    }
+    .tab-btn {
+      background: var(--card); border: 1px solid var(--border);
+      color: var(--gray); padding: 0.6rem 1.2rem;
+      border-radius: 4px; cursor: pointer; font-size: 0.85rem;
+      letter-spacing: 1px; transition: all .2s;
+    }
+    .tab-btn:hover, .tab-btn.active {
+      background: var(--orange); border-color: var(--orange);
+      color: var(--white);
+    }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.25rem;
+      max-width: 1100px; margin: 0 auto;
+    }
+    .menu-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 8px; overflow: hidden;
+      transition: all .25s; cursor: default;
+    }
+    .menu-card:hover {
+      border-color: var(--orange); transform: translateY(-4px);
+      box-shadow: 0 8px 30px rgba(255,102,0,0.15);
+    }
+    .menu-img {
+      width: 100%; height: 160px;
+      background: var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 3rem;
+    }
+    .menu-info { padding: 1.25rem; }
+    .menu-info h3 { font-size: 1rem; font-weight: 700; margin-bottom: 0.3rem; }
+    .menu-info p { font-size: 0.8rem; color: var(--gray); margin-bottom: 0.75rem; }
+    .menu-price {
+      font-size: 1.1rem; font-weight: 900; color: var(--orange);
+    }
+    .coming-soon-card .menu-img { opacity: 0.5; }
+    .coming-soon-card .menu-info h3 { color: var(--gray); }
+
+    /* ── FLEISCH ── */
+    #fleisch {
+      padding: 6rem 2rem;
+      background: var(--dark);
+    }
+    .fleisch-inner {
+      max-width: 900px; margin: 0 auto;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 4rem;
+      align-items: center;
+    }
+    .fleisch-text .section-label { text-align: left; }
+    .fleisch-text .section-title { text-align: left; }
+    .fleisch-text p { color: var(--light-gray); margin-bottom: 1.5rem; font-size: 1rem; }
+    .fleisch-visual {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 3rem 2rem; text-align: center;
+    }
+    .fleisch-visual .big-emoji { font-size: 5rem; margin-bottom: 1rem; display: block; }
+    .fleisch-visual p { color: var(--gray); font-size: 0.9rem; }
+
+    /* ── ÖFFNUNGSZEITEN ── */
+    #oeffnungszeiten {
+      padding: 6rem 2rem;
+      background: var(--black);
+    }
+    #oeffnungszeiten .section-header { text-align: center; margin-bottom: 3rem; }
+    .location-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;
+      max-width: 900px; margin: 0 auto;
+    }
+    .hours-card, .map-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 8px; overflow: hidden;
+    }
+    .card-header {
+      background: var(--border); padding: 1rem 1.5rem;
+      display: flex; align-items: center; gap: 0.75rem;
+      font-weight: 700; letter-spacing: 1px; font-size: 0.85rem;
+      text-transform: uppercase;
+    }
+    .card-header span { font-size: 1.2rem; }
+    .hours-list { padding: 1.5rem; }
+    .hours-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0.6rem 0; border-bottom: 1px solid var(--border);
+      font-size: 0.9rem;
+    }
+    .hours-row:last-child { border-bottom: none; }
+    .hours-row .day { color: var(--gray); }
+    .hours-row .time { font-weight: 700; color: var(--white); }
+    .contact-info { padding: 1rem 1.5rem; border-top: 1px solid var(--border); }
+    .contact-row {
+      display: flex; align-items: center; gap: 0.75rem;
+      padding: 0.5rem 0; font-size: 0.85rem; color: var(--light-gray);
+    }
+    .contact-row a { color: var(--orange); text-decoration: none; }
+    .map-card iframe {
+      width: 100%; height: 100%; min-height: 350px; border: none; display: block;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--dark); border-top: 1px solid var(--border);
+      padding: 3rem 2rem 2rem;
+      text-align: center;
+    }
+    .footer-logo {
+      font-size: 1.5rem; font-weight: 900; letter-spacing: 2px;
+      margin-bottom: 1.5rem;
+    }
+    .footer-logo span { color: var(--orange); }
+    .footer-links {
+      display: flex; gap: 2rem; justify-content: center; flex-wrap: wrap;
+      margin-bottom: 2rem; list-style: none;
+    }
+    .footer-links a {
+      color: var(--gray); text-decoration: none; font-size: 0.85rem;
+      letter-spacing: 1px; transition: color .2s;
+    }
+    .footer-links a:hover { color: var(--orange); }
+    .footer-socials {
+      display: flex; gap: 1rem; justify-content: center; margin-bottom: 2rem;
+    }
+    .social-btn {
+      width: 42px; height: 42px; border-radius: 50%;
+      background: var(--card); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      text-decoration: none; font-size: 1.1rem;
+      transition: all .2s;
+    }
+    .social-btn:hover { border-color: var(--orange); background: rgba(255,102,0,0.1); }
+    .footer-copy { color: var(--gray); font-size: 0.75rem; letter-spacing: 1px; }
+    .footer-copy a { color: var(--orange); text-decoration: none; }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes bounce {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50%       { transform: translateX(-50%) translateY(8px); }
+    }
+    .reveal {
+      opacity: 0; transform: translateY(40px);
+      transition: opacity .6s ease, transform .6s ease;
+    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .nav-links.open {
+        display: flex; flex-direction: column;
+        position: fixed; top: 60px; left: 0; right: 0;
+        background: var(--dark); padding: 1.5rem 2rem; gap: 1.5rem;
+        border-bottom: 1px solid var(--border);
+      }
+      .hamburger { display: flex; }
+      .nav-order { display: none; }
+      .fleisch-inner { grid-template-columns: 1fr; gap: 2rem; }
+      .location-grid { grid-template-columns: 1fr; }
+      .hero-title { letter-spacing: -1px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="navbar">
+  <div class="nav-logo">DOKTOR <span>BURGERIC</span></div>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="#ueber-uns">Über uns</a></li>
+    <li><a href="#speisekarte">Speisekarte</a></li>
+    <li><a href="#fleisch">Fleisch</a></li>
+    <li><a href="#oeffnungszeiten">Standort</a></li>
+  </ul>
+  <a class="nav-order" href="https://www.lieferando.at/speisekarte/doktor-burgeric" target="_blank" rel="noopener">Jetzt bestellen</a>
+  <div class="hamburger" id="hamburger" onclick="toggleMenu()">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+  <div class="hero-content">
+    <div class="hero-badge">🩺 Diagnose: Hunger. Rezept: Burger.</div>
+    <h1 class="hero-title">
+      DOKTOR
+      <span class="accent">BURGERIC</span>
+    </h1>
+    <p class="hero-tagline">Burger, <em>Ćevapčići</em> &amp; more · Graz</p>
+    <div class="hero-ctas">
+      <a class="btn-primary" href="https://www.lieferando.at/speisekarte/doktor-burgeric" target="_blank" rel="noopener">Jetzt bestellen</a>
+      <a class="btn-outline" href="#speisekarte">Speisekarte ansehen</a>
+    </div>
+  </div>
+  <div class="hero-scroll">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M12 5v14M5 12l7 7 7-7"/>
+    </svg>
+    scroll
+  </div>
+</section>
+
+<!-- ÜBER UNS -->
+<section id="ueber-uns">
+  <span class="section-label reveal">Über uns</span>
+  <h2 class="section-title reveal">Halal Angus Beef.<br>Balkan Soul.<br>Graz gemacht.</h2>
+  <p class="brand-statement reveal">
+    Bei <strong>Doktor Burgeric</strong> behandeln wir Hunger mit voller Leidenschaft.
+    Frisches Halal Angus Rindfleisch, authentische Balkan-Grillspezialitäten
+    und Burger mit Charakter – alles direkt aus dem Herzen von Graz.
+    <br><br>
+    Keine langen Wartezeiten. Keine halben Sachen.
+    Nur volle Dosen Geschmack – auf Rezept.
+  </p>
+  <div class="pillars reveal">
+    <div class="pillar">
+      <div class="pillar-icon">🥩</div>
+      <h3>Halal Angus</h3>
+      <p>100 % zertifiziertes Halal Angus Rindfleisch – frisch & ohne Kompromisse.</p>
+    </div>
+    <div class="pillar">
+      <div class="pillar-icon">🔥</div>
+      <h3>Balkan Grill</h3>
+      <p>Ćevapčići & Pljeskavica nach Hausrezept – direkt vom Grill.</p>
+    </div>
+    <div class="pillar">
+      <div class="pillar-icon">📍</div>
+      <h3>Graz gemacht</h3>
+      <p>Lokal, leidenschaftlich, mit Liebe – dein Lieblingsladen in der Riesstraße.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SPEISEKARTE -->
+<section id="speisekarte">
+  <div class="section-header">
+    <span class="section-label reveal">Unsere Karte</span>
+    <h2 class="section-title reveal">Die Speisekarte</h2>
+    <div class="halal-badge reveal">✅ Alle Produkte aus Halal Angus Rindfleisch</div>
+  </div>
+
+  <div class="tabs reveal">
+    <button class="tab-btn active" onclick="switchTab('burger', this)">🍔 Burger</button>
+    <button class="tab-btn" onclick="switchTab('grill', this)">🥙 Vom Grill</button>
+    <button class="tab-btn" onclick="switchTab('fingerfood', this)">🌶️ Fingerfood</button>
+    <button class="tab-btn" onclick="switchTab('hotdog', this)">🌭 Hot Dogs</button>
+    <button class="tab-btn" onclick="switchTab('vegan', this)">🥗 Vegetarisch</button>
+    <button class="tab-btn" onclick="switchTab('dessert', this)">🍦 Dessert</button>
+    <button class="tab-btn" onclick="switchTab('getraenke', this)">🥤 Getränke</button>
+  </div>
+
+  <!-- BURGER -->
+  <div class="tab-panel active" id="tab-burger">
+    <div class="menu-grid">
+      <div class="menu-card">
+        <div class="menu-img">🍔</div>
+        <div class="menu-info">
+          <h3>Angus Hamburger</h3>
+          <p>Klassisch & saftig</p>
+          <div class="menu-price">€ 10,20</div>
+        </div>
+      </div>
+      <div class="menu-card">
+        <div class="menu-img">🍔</div>
+        <div class="menu-info">
+          <h3>Angus Cheeseburger</h3>
+          <p>Mit Cheddar überbacken</p>
+          <div class="menu-price">€ 11,60</div>
+        </div>
+      </div>
+      <div class="menu-card">
+        <div class="menu-img">🍔</div>
+        <div class="menu-info">
+          <h3>Double Angus Cheeseburger</h3>
+          <p>Doppelt hält besser</p>
+          <div class="menu-price">€ 15,40</div>
+        </div>
+      </div>
+      <div class="menu-card">
+        <div class="menu-img">🍔</div>
+        <div class="menu-info">
+          <h3>Angus Cheeseburger mit Rinderspeck</h3>
+          <p>Käse + knuspriger Rinderspeck</p>
+          <div class="menu-price">€ 15,30</div>
+        </div>
+      </div>
+      <div class="menu-card">
+        <div class="menu-img">🍔</div>
+        <div class="menu-info">
+          <h3>Double Cheeseburger mit Rinderspeck</h3>
+          <p>Die volle Dosis</p>
+          <div class="menu-price">€ 19,10</div>
+        </div>
+      </div>
+      <div class="menu-card">
+        <div class="menu-img">🍔</div>
+        <div class="menu-info">
+          <h3>Kommando Burger</h3>
+          <p>Für echte Helden</p>
+          <div class="menu-price">€ 11,60</div>
+        </div>
+      </div>
+      <div class="menu-card" style="border-color: var(--orange)">
+        <div class="menu-img">🍔</div>
+        <div class="menu-info">
+          <h3>Mrdr Primarius Burger</h3>
+          <p>Chefarzt-Empfehlung 👨‍⚕️</p>
+          <div class="menu-price">€ 16,50</div>
+        </div>
+      </div>
+      <div class="menu-card">
+        <div class="menu-img">🍗</div>
+        <div class="menu-info">
+          <h3>Crispy Chicken Burger</h3>
+          <p>Knusprig & saftig</p>
+          <div class="menu-price">€ 8,90</div>
+        </div>
+      </div>
+      <div class="menu-card">
+        <div class="menu-img">🍗</div>
+        <div class="menu-info">
+          <h3>Hühner Cordon Bleu Burger</h3>
+          <p>Klassiker neu interpretiert</p>
+          <div class="menu-price">€ 11,10</div>
+        </div>
+      </div>
+      <div class="menu-card">
+        <div class="menu-img">🍗</div>
+        <div class="menu-info">
+          <h3>Putenschnitzel Burger</h3>
+          <p>Leicht & lecker</p>
+          <div class="menu-price">€ 11,90</div>
+        </div>
+      </div>
+      <div class="menu-card">
+        <div class="menu-img">🍔</div>
+        <div class="menu-info">
+          <h3>Double Angus Hamburger</h3>
+          <p>Klassisch im Doppelpack</p>
+          <div class="menu-price">€ 14,10</div>
+        </div>
+      </div>
+      <div class="menu-card">
+        <div class="menu-img">🍔</div>
+        <div class="menu-info">
+          <h3>Angus Hamburger mit Rinderspeck</h3>
+          <p>Mit knusprigem Rinderspeck</p>
+          <div class="menu-price">€ 14,10</div>
+        </div>
+      </div>
+      <div class="menu-card">
+        <div class="menu-img">🍔</div>
+        <div class="menu-info">
+          <h3>Double Angus Hamburger mit Rinderspeck</h3>
+          <p>Die ultimative Kombination</p>
+          <div class="menu-price">€ 17,90</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VOM GRILL -->
+  <div class="tab-panel" id="tab-grill">
+    <div class="menu-grid">
+      <div class="menu-card">
+        <div class="menu-img">🥙</div>
+        <div class="menu-info">
+          <h3>Pljeskavica im Fladenbrot</h3>
+          <p>Balkan-Klassiker vom Grill</p>
+          <div class="menu-price">€ 12,90</div>
+        </div>
+      </div>
+      <div class="menu-card">
+        <div class="menu-img">🥩</div>
+        <div class="menu-info">
+          <h3>Ćevapčići 5 Stück</h3>
+          <p>Frisch gegrillt, nach Hausrezept</p>
+          <div class="menu-price">€ 11,10</div>
+        </div>
+      </div>
+      <div class="menu-card">
+        <div class="menu-img">🥩</div>
+        <div class="menu-info">
+          <h3>Ćevapčići 7 Stück</h3>
+          <p>Für den etwas größeren Hunger</p>
+          <div class="menu-price">€ 13,30</div>
+        </div>
+      </div>
+      <div class="menu-card" style="border-color: var(--orange)">
+        <div class="menu-img">🥩</div>
+        <div class="menu-info">
+          <h3>Ćevapčići 10 Stück</h3>
+          <p>Für die volle Behandlung 🩺</p>
+          <div class="menu-price">€ 16,80</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FINGERFOOD -->
+  <div class="tab-panel" id="tab-fingerfood">
+    <div class="menu-grid">
+      <div class="menu-card coming-soon-card">
+        <div class="menu-img">🌶️</div>
+        <div class="menu-info">
+          <h3>Fingerfood & Saucen</h3>
+          <p>Fotos folgen – bald verfügbar</p>
+          <div class="menu-price" style="color: var(--gray)">demnächst</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HOT DOGS -->
+  <div class="tab-panel" id="tab-hotdog">
+    <div class="menu-grid">
+      <div class="menu-card coming-soon-card">
+        <div class="menu-img">🌭</div>
+        <div class="menu-info">
+          <h3>Hot Dogs</h3>
+          <p>Fotos folgen – bald verfügbar</p>
+          <div class="menu-price" style="color: var(--gray)">demnächst</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VEGAN -->
+  <div class="tab-panel" id="tab-vegan">
+    <div class="menu-grid">
+      <div class="menu-card coming-soon-card">
+        <div class="menu-img">🥗</div>
+        <div class="menu-info">
+          <h3>Vegetarisch / Vegan</h3>
+          <p>Fotos folgen – bald verfügbar</p>
+          <div class="menu-price" style="color: var(--gray)">demnächst</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DESSERT -->
+  <div class="tab-panel" id="tab-dessert">
+    <div class="menu-grid">
+      <div class="menu-card coming-soon-card">
+        <div class="menu-img">🍦</div>
+        <div class="menu-info">
+          <h3>Dessert</h3>
+          <p>Fotos folgen – bald verfügbar</p>
+          <div class="menu-price" style="color: var(--gray)">demnächst</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GETRÄNKE -->
+  <div class="tab-panel" id="tab-getraenke">
+    <div class="menu-grid">
+      <div class="menu-card coming-soon-card">
+        <div class="menu-img">🥤</div>
+        <div class="menu-info">
+          <h3>Getränke</h3>
+          <p>Fotos folgen – bald verfügbar</p>
+          <div class="menu-price" style="color: var(--gray)">demnächst</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FLEISCH AUS DER KÜHLTRUHE -->
+<section id="fleisch">
+  <div class="fleisch-inner">
+    <div class="fleisch-text">
+      <span class="section-label reveal">Frisch kaufen</span>
+      <h2 class="section-title reveal">🥩 Frisches Fleisch – direkt bei uns kaufen</h2>
+      <p class="reveal">
+        Du liebst unsere Qualität? Dann hol dir das Beste direkt nach Hause.
+        Wir bieten frisches Halal Angus Rindfleisch auch zum Mitnehmen an –
+        direkt aus unserer Kühltruhe im Laden.
+      </p>
+      <p class="reveal">
+        Perfekt für den nächsten Grillabend, das Familienessen
+        oder einfach für alle, die wissen, was gutes Fleisch bedeutet.
+      </p>
+      <a class="btn-outline reveal" href="#oeffnungszeiten">Öffnungszeiten ansehen</a>
+    </div>
+    <div class="fleisch-visual reveal">
+      <span class="big-emoji">🥩</span>
+      <h3 style="font-size:1.2rem; margin-bottom:.5rem;">Kühltruhe im Shop</h3>
+      <p>Halal Angus Rindfleisch<br>frisch & direkt verfügbar</p>
+    </div>
+  </div>
+</section>
+
+<!-- ÖFFNUNGSZEITEN -->
+<section id="oeffnungszeiten">
+  <div class="section-header">
+    <span class="section-label reveal">Wir sind da</span>
+    <h2 class="section-title reveal">Öffnungszeiten & Standort</h2>
+  </div>
+  <div class="location-grid">
+    <div class="hours-card reveal">
+      <div class="card-header"><span>🕐</span> Öffnungszeiten</div>
+      <div class="hours-list">
+        <div class="hours-row">
+          <span class="day">Montag – Freitag</span>
+          <span class="time">10:00 – 20:00</span>
+        </div>
+        <div class="hours-row">
+          <span class="day">Samstag</span>
+          <span class="time">12:00 – 20:00</span>
+        </div>
+        <div class="hours-row">
+          <span class="day">Sonntag</span>
+          <span class="time">12:00 – 20:00</span>
+        </div>
+      </div>
+      <div class="contact-info">
+        <div class="contact-row">
+          📍 <span>Riesstraße 16, 8010 Graz</span>
+        </div>
+        <div class="contact-row">
+          📞 <a href="tel:+4369010181484">0690 10181484</a>
+        </div>
+        <div class="contact-row">
+          🛵 <a href="https://www.lieferando.at/speisekarte/doktor-burgeric" target="_blank" rel="noopener">Lieferando Bestellung</a>
+        </div>
+      </div>
+    </div>
+    <div class="map-card reveal">
+      <iframe
+        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2717.3!2d15.449!3d47.070!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zRG9rdG9yIEJ1cmdlcmljLCBSaWVzc3RyYcOfZSAxNiwgODAxMCBHcmF6!5e0!3m2!1sde!2sat!4v1"
+        allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+        title="Doktor Burgeric Standort">
+      </iframe>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">DOKTOR <span>BURGERIC</span></div>
+  <div class="footer-socials">
+    <a class="social-btn" href="#" aria-label="Instagram">📸</a>
+    <a class="social-btn" href="https://www.lieferando.at/speisekarte/doktor-burgeric" target="_blank" rel="noopener" aria-label="Lieferando">🛵</a>
+  </div>
+  <ul class="footer-links">
+    <li><a href="#ueber-uns">Über uns</a></li>
+    <li><a href="#speisekarte">Speisekarte</a></li>
+    <li><a href="#oeffnungszeiten">Standort</a></li>
+    <li><a href="https://www.lieferando.at/speisekarte/doktor-burgeric" target="_blank" rel="noopener">Lieferando</a></li>
+    <li><a href="#">Impressum</a></li>
+    <li><a href="#">Datenschutz</a></li>
+  </ul>
+  <p class="footer-copy">© 2024 Doktor Burgeric · Riesstraße 16, 8010 Graz · <a href="tel:+4369010181484">0690 10181484</a></p>
+</footer>
+
+<script>
+  // Mobile menu
+  function toggleMenu() {
+    document.getElementById('navLinks').classList.toggle('open');
+  }
+
+  // Tab switching
+  function switchTab(id, btn) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + id).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  // Scroll reveal
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        observer.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  // Navbar scroll effect
+  window.addEventListener('scroll', () => {
+    const nav = document.getElementById('navbar');
+    nav.style.background = window.scrollY > 50
+      ? 'rgba(10,10,10,0.98)'
+      : 'rgba(10,10,10,0.92)';
+  });
+</script>
+</body>
+</html>
